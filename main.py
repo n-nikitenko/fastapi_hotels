@@ -4,33 +4,45 @@ from fastapi.params import Body, Query
 app = FastAPI()
 
 hotels = [
-    {"id": 1, "title": "Sochi", "stars": 3},
-    {"id": 2, "title": "Dubai", "stars": 4},
+    {"id": 1, "title": "Sochi", "name": "sochi"},
+    {"id": 2, "title": "Дубай", "name": "dubai"},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
+    {"id": 5, "title": "Москва", "name": "moscow"},
+    {"id": 6, "title": "Казань", "name": "kazan"},
+    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
 ]
 
 
-@app.get("/hotels")
-def get_hotels(hotel_id: int | None = Query(default=None), title: str | None = Query(default=None)):
+@app.get("/hotels", tags=["Отели"])
+async def get_hotels(
+        hotel_id: int | None = Query(default=None),
+        title: str | None = Query(default=None, description="Название отеля"),
+        page: int |  None = Query(default=1, description="Номер страницы"),
+        per_page: int | None = Query(default=5, description="Кол-во отелей на странице"),
+):
+    ret = hotels
     if hotel_id or title:
-        return [hotel for hotel in hotels if hotel["id"]==hotel_id or hotel["title"]==title]
-    return hotels
+        ret = [hotel for hotel in hotels if hotel["id"]==hotel_id or hotel["title"]==title]
+    start_idx = (abs(page) - 1) * abs(per_page)
+    return ret[start_idx: start_idx + abs(per_page)]
 
 
 @app.delete("/hotels/{id}")
-def remove_hotel(hotel_id: int):
+async def remove_hotel(hotel_id: int):
     global hotels
     hotels = [hotel for hotel in hotels if hotel["id"]!=hotel_id]
 
 
 @app.post("/hotels")
-def create_hotel(title: str = Body(), stars: int = Body()):
+async def create_hotel(title: str = Body(), stars: int = Body()):
     global hotels
     hotels.append({"id": len(hotels) + 1, "title": title, "stars": stars})
     return {"ok": True}
 
 
 @app.put("/hotels/{hotel_id}")
-def update_hotel(hotel_id: int, title: str = Body(), stars: int = Body()):
+async def update_hotel(hotel_id: int, title: str = Body(), stars: int = Body()):
     global hotels
     hotel = next((hotel for hotel in hotels if hotel["id"]==hotel_id), None)
     if hotel:
@@ -40,7 +52,7 @@ def update_hotel(hotel_id: int, title: str = Body(), stars: int = Body()):
 
 
 @app.patch("/hotels/{hotel_id}")
-def patch_hotel(hotel_id: int, title: str | None = Body(default=None), stars: int | None = Body(default=None)):
+async def patch_hotel(hotel_id: int, title: str | None = Body(default=None), stars: int | None = Body(default=None)):
     global hotels
     hotel = next((hotel for hotel in hotels if hotel["id"]==hotel_id), None)
     if hotel:
