@@ -6,6 +6,7 @@ from fastapi.params import Query
 from api.dependencies import PaginationDep
 from database import session_maker
 from models import HotelOrm
+from repositories import HotelRepository
 from schemas import Hotel, HotelPatch
 from sqlalchemy import insert, select, or_
 
@@ -30,22 +31,13 @@ async def get_hotels(
 ):
     limit = paginator.limit or 5
     async with session_maker() as session:
-        query = select(HotelOrm)
-        filters = []
-        if location:
-            filters.append(HotelOrm.location.icontains(location))
-        if title:
-            filters.append(HotelOrm.title.icontains(title))
-
-        if filters:
-            query = query.where(or_(*filters))
-        query = (
-            query
-            .offset((paginator.page - 1) * limit)
-            .limit(limit)
+        repo = HotelRepository(session)
+        return await repo.get_all(
+            limit=limit,
+            offset=(paginator.page - 1) * limit,
+            location=location,
+            title=title
         )
-        result = await session.execute(query)
-        return result.scalars().all()
 
 
 @router.delete("/{id}")
@@ -64,19 +56,19 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
             "stars": 3
         }),
     "2": Example(
-            summary="Дубай",
-            value={
-                "title": "Отель Дубай у фонтана",
-                "location": "ул. Фонтана, 13",
-                "stars": 4
-            })
+        summary="Дубай",
+        value={
+            "title": "Отель Дубай у фонтана",
+            "location": "ул. Фонтана, 13",
+            "stars": 4
+        })
 })):
     async with session_maker() as session:
-        stmt = insert(HotelOrm).values(**hotel_data.model_dump())
-        await session.execute(stmt)
+        repo = HotelRepository(session)
+        hotel =  await repo.create(**hotel_data.model_dump())
         await session.commit()
 
-    return {"ok": True}
+    return {"ok": True, "data": hotel}
 
 
 @router.put("/{hotel_id}")
