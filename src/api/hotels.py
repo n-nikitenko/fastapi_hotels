@@ -5,10 +5,8 @@ from fastapi.params import Query
 
 from api.dependencies import PaginationDep
 from database import session_maker
-from models import HotelOrm
 from repositories import HotelRepository
 from schemas import Hotel, HotelPatch
-from sqlalchemy import insert, select, or_
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -40,10 +38,13 @@ async def get_hotels(
         )
 
 
-@router.delete("/{id}")
+@router.delete("/{id}", summary="Удаление отеля")
 async def remove_hotel(hotel_id: int):
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel["id"]!=hotel_id]
+    async with session_maker() as session:
+        repo = HotelRepository(session)
+        await repo.delete(id=hotel_id)
+        await session.commit()
+    return {"ok": True}
 
 
 @router.post("/", summary="Создание отеля")
@@ -65,22 +66,23 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 })):
     async with session_maker() as session:
         repo = HotelRepository(session)
-        hotel =  await repo.create(**hotel_data.model_dump())
+        hotel =  await repo.create(hotel_data)
         await session.commit()
 
     return {"ok": True, "data": hotel}
 
 
-@router.put("/{hotel_id}")
+@router.put("/{hotel_id}", summary="Обновление данных отеля")
 async def update_hotel(
         hotel_id: int,
         hotel_data: Hotel
 ):
-    global hotels
-    hotel = next((hotel for hotel in hotels if hotel["id"]==hotel_id), None)
+    async with session_maker() as session:
+        repo = HotelRepository(session)
+        hotel =  await repo.update(hotel_data, id=hotel_id)
+        await session.commit()
     if hotel:
-        hotel.update({"title": hotel_data.title, "stars": hotel_data.stars})
-        return {"ok": True}
+        return {"ok": True , "hotel": hotel}
     raise HTTPException(status_code=404, detail="Отель не найден")
 
 
