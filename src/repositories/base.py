@@ -28,8 +28,13 @@ class BaseRepository:
         return result.scalars().first()
 
 
-    async def update(self, data: BaseModel, **filter_by):
-        stmt = update(self._model).filter_by(**filter_by).values(**data.model_dump()).returning(self._model)
+    async def update(self, data: BaseModel, exclude_unset : bool = False, **filter_by):
+        stmt = (
+            update(self._model)
+            .filter_by(**filter_by)
+            .values(**data.model_dump(exclude_unset=exclude_unset))
+            .returning(self._model)
+        )
         result = await self._session.execute(stmt)
         return result.scalars().first()
 

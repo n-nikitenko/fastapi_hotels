@@ -11,5 +11,5 @@ class Hotel(BaseModel):
 
 class HotelPatch(BaseModel):
     title: Annotated[str | None, Field(default=None, description="Название отеля")]
-    location: Annotated[str, Field(description="Адрес отеля")]
+    location: Annotated[str | None, Field(default=None, description="Адрес отеля")]
     stars: Annotated[int | None, Field(default=None, description="Количество звезд", le=5, gt=0)]
