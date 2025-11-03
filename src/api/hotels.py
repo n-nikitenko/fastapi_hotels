@@ -98,7 +98,7 @@ async def get_hotel(
 ):
     async with session_maker() as session:
         repo = HotelRepository(session)
-        hotel = await repo.get(hotel_id=hotel_id)
+        hotel = await repo.get_one_or_none(hotel_id=hotel_id)
     if not hotel:
         raise HTTPException(status_code=404, detail="Отель не найден")
     return hotel

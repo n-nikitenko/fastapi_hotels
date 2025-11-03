@@ -7,9 +7,6 @@ from repositories.base import BaseRepository
 class HotelRepository(BaseRepository):
     _model = HotelOrm
 
-    async def get(self, hotel_id: int):
-        return await self._session.get(self._model, hotel_id)
-
     async def get_all(self,
                 limit: int,
                 offset: int,
