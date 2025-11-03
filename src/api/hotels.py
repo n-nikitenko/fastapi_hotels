@@ -90,3 +90,15 @@ async def patch_hotel(
     if hotel:
         return {"ok": True, "hotel": hotel}
     raise HTTPException(status_code=404, detail="Отель не найден")
+
+
+@router.get("/{hotel_id}", summary="Получение данных отеля")
+async def get_hotel(
+        hotel_id: int
+):
+    async with session_maker() as session:
+        repo = HotelRepository(session)
+        hotel = await repo.get(hotel_id=hotel_id)
+    if not hotel:
+        raise HTTPException(status_code=404, detail="Отель не найден")
+    return hotel
