@@ -5,6 +5,11 @@ from sqlalchemy import select, insert, update, delete
 
 class BaseRepository:
     _model = None
+    _schema: BaseModel = None
+
+    def _to_schema(self, orm_obj):
+        return self._schema.model_validate(orm_obj, from_attributes=True) # todo: убрать связь с Pydantic
+
 
     def __init__(self, session: AsyncSession) :
         self._session = session
@@ -14,18 +19,19 @@ class BaseRepository:
         query = select(self._model)
 
         result = await self._session.execute(query)
-        return result.scalars().all()
+        return [self._to_schema(obj) for obj in result.scalars().all()]
 
     async def get_one_or_none(self, **filter_by):
         query = select(self._model).filter_by(**filter_by)
 
         result = await self._session.execute(query)
-        return result.scalars().one_or_none()
+        obj = result.scalars().one_or_none()
+        return self._to_schema(obj)  if obj else None
 
     async def create(self, data: BaseModel):
         stmt = insert(self._model).values(**data.model_dump()).returning(self._model)
         result = await self._session.execute(stmt)
-        return result.scalars().first()
+        return self._to_schema(result.scalars().first())
 
 
     async def update(self, data: BaseModel, exclude_unset : bool = False, **filter_by):
@@ -36,7 +42,7 @@ class BaseRepository:
             .returning(self._model)
         )
         result = await self._session.execute(stmt)
-        return result.scalars().first()
+        return self._to_schema(result.scalars().first())
 
 
     async def delete(self, **filter_by) -> None:

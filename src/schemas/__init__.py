@@ -1,2 +1,3 @@
-from .hotels import Hotel, HotelPatch
-__all__=["Hotel", "HotelPatch"]
+from .hotels import HotelAdd, HotelPatch, Hotel
+from .rooms import Room
+__all__=["HotelAdd", "HotelPatch", "Hotel", "Room"]

@@ -2,10 +2,12 @@ from sqlalchemy import select, or_
 
 from models import HotelOrm
 from repositories.base import BaseRepository
+from schemas import Hotel
 
 
 class HotelRepository(BaseRepository):
     _model = HotelOrm
+    _schema = Hotel
 
     async def get_all(self,
                 limit: int,
@@ -28,4 +30,4 @@ class HotelRepository(BaseRepository):
             .limit(limit)
         )
         result = await self._session.execute(query)
-        return result.scalars().all()
+        return [self._to_schema(obj) for obj in result.scalars().all()]
