@@ -14,3 +14,6 @@ class UserAdd(BaseModel):
 class User(BaseModel):
     id: Annotated[int | None, Field(default=None, description="Идентификатор пользователя")]
     email: Annotated[EmailStr, Field(description="Логин пользователя")]
+
+class UserWithHashedPassword(User):
+    hashed_password: Annotated[str, Field(description="Пароль пользователя")]
