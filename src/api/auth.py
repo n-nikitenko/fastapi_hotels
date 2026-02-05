@@ -1,7 +1,7 @@
 from datetime import timedelta, timezone, datetime
 
 import jwt
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Request
 
 from config import settings
 from database import session_maker
@@ -37,4 +37,10 @@ async def login_user(data: UserRequestAdd, response: Response):
         access_token = AuthService.create_access_token({"user_id": user.id})
         response.set_cookie("access_token", access_token)
 
+    return {"access_token": access_token}
+
+
+@router.get("/only_auth")
+def only_auth(request: Request):
+    access_token = request.cookies.get("access_token")
     return {"access_token": access_token}
