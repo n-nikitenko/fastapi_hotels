@@ -1,13 +1,9 @@
-from datetime import timedelta, timezone, datetime
+from fastapi import APIRouter, HTTPException, Response
 
-import jwt
-from fastapi import APIRouter, HTTPException, Response, Request
-
-from config import settings
+from api.dependencies import UserIdDep
 from database import session_maker
 from repositories import UserRepository
-from schemas import UserRequestAdd, UserAdd, User
-from pwdlib import PasswordHash
+from schemas import UserRequestAdd, UserAdd
 
 from services import AuthService
 
@@ -40,7 +36,9 @@ async def login_user(data: UserRequestAdd, response: Response):
     return {"access_token": access_token}
 
 
-@router.get("/only_auth")
-def only_auth(request: Request):
-    access_token = request.cookies.get("access_token")
-    return {"access_token": access_token}
+@router.get("/me")
+async def get_me(user_id: UserIdDep):
+    async with session_maker() as session:
+        repo = UserRepository(session)
+        user = await repo.get_one_or_none(id=user_id)
+        return user
