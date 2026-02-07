@@ -36,6 +36,15 @@ async def login_user(data: UserRequestAdd, response: Response):
     return {"access_token": access_token}
 
 
+@router.post("/logout", summary="Выход")
+async def logout_user(user_id: UserIdDep, response: Response):
+    async with session_maker() as session:
+        repo = UserRepository(session)
+        await repo.get_one_or_none(id=user_id)
+        response.delete_cookie("access_token")
+        return {"ok": True}
+
+
 @router.get("/me")
 async def get_me(user_id: UserIdDep):
     async with session_maker() as session:
