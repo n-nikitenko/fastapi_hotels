@@ -18,7 +18,10 @@ class BaseRepository:
 
 
     async def get_all(self, *args, **kwargs):
-        query = select(self._model)
+        return self.get_all_filtered()
+
+    async def get_all_filtered(self, **filter_by):
+        query = select(self._model).filter_by(**filter_by)
 
         result = await self._session.execute(query)
         return [self._to_schema(obj, self._schema) for obj in result.scalars().all()]
