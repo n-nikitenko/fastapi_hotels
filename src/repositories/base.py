@@ -7,7 +7,9 @@ class BaseRepository:
     _model = None
     _schema: BaseModel = None
 
-    def _to_schema(self, orm_obj, schema):
+    def _to_schema(self, orm_obj, schema: BaseModel | None = None):
+        if schema is None:
+            schema = self._schema
         return schema.model_validate(orm_obj, from_attributes=True) # todo: убрать связь с Pydantic
 
 
