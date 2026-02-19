@@ -17,7 +17,7 @@ async def raise_if_hotel_not_found(hotel_id: int, session):
 async def get_hotels(hotel_id: int,):
     async with session_maker() as session:
         repo = RoomRepository(session)
-        return await repo.get_all(hotel_id=hotel_id)
+        return await repo.get_all_filtered(hotel_id=hotel_id)
 
 
 @router.delete("/{hotel_id}/rooms/{id}", summary="Удаление")
