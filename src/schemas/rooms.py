@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from pydantic import BaseModel, Field
-from sqlalchemy.cyextension.util import Mapping
 
 class RoomAdd(BaseModel):
     title: Annotated[str, Field(description="Название")]
@@ -11,14 +10,8 @@ class RoomAdd(BaseModel):
 
 class RoomAddEx(RoomAdd):
     hotel_id: Annotated[int, Field(description="Идентификатор отеля")]
-    title: Annotated[str, Field(description="Название")]
-    description: Annotated[str | None, Field(default=None, description="Описание")]
-    price: Annotated[int, Field(description="Стоимость", gt=0)]
-    quantity: Annotated[int, Field(description="Количество", ge=0)]
 
-class Room(RoomAdd):
-    __tablename__ = "rooms"
-
+class Room(RoomAddEx):
     id: Annotated[int | None, Field(default=None, description="Идентификатор")]
 
 class RoomPatch(BaseModel):

@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, ForeignKey, String
+from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped
 from sqlalchemy.testing.schema import mapped_column
 

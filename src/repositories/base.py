@@ -33,6 +33,7 @@ class BaseRepository:
         obj = result.scalars().one_or_none()
         return self._to_schema(obj, self._schema)  if obj else None
 
+
     async def create(self, data: BaseModel):
         stmt = insert(self._model).values(**data.model_dump()).returning(self._model)
         result = await self._session.execute(stmt)

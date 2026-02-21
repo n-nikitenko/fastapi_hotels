@@ -2,12 +2,13 @@ from asyncpg.exceptions import UniqueViolationError
 from fastapi import FastAPI, HTTPException, status
 import asyncpg
 from sqlalchemy.exc import IntegrityError
-from api import hotels_router, auth_router, rooms_router
+from api import hotels_router, auth_router, rooms_router, booking_router
 
 app = FastAPI()
 app.include_router(auth_router)
 app.include_router(hotels_router)
 app.include_router(rooms_router)
+app.include_router(booking_router)
 
 
 @app.exception_handler(IntegrityError)

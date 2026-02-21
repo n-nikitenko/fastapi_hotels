@@ -10,6 +10,7 @@ class DBManager:
         hotel_repo_cls: Type,
         room_repo_cls: Type,
         user_repo_cls: Type,
+        bookings_repo_cls: Type,
     ):
         self.session_factory = session_factory
         self._committed = False
@@ -18,6 +19,7 @@ class DBManager:
         self.hotel_repo_cls = hotel_repo_cls
         self.room_repo_cls = room_repo_cls
         self.user_repo_cls = user_repo_cls
+        self.bookings_repo_cls = bookings_repo_cls
 
 
     async def __aenter__(self):
@@ -27,6 +29,7 @@ class DBManager:
         self.hotels = self.hotel_repo_cls(self.session)
         self.rooms = self.room_repo_cls(self.session)
         self.users = self.user_repo_cls(self.session)
+        self.bookings = self.bookings_repo_cls(self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

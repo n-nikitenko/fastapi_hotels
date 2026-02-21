@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from services import AuthService
 from utils import DBManager
 from database import session_maker
-from repositories import HotelRepository, RoomRepository, UserRepository
+from repositories import HotelRepository, RoomRepository, UserRepository, BookingRepository
+
 
 class PaginationParams(BaseModel):
     page: Annotated[int | None, Field(), Query(1, ge=1, description="Номер страницы")]
@@ -38,6 +39,7 @@ def get_db_manager() -> DBManager:
         hotel_repo_cls=HotelRepository,
         user_repo_cls=UserRepository,
         room_repo_cls=RoomRepository,
+        bookings_repo_cls=BookingRepository,
     )
 
 async def get_db():
