@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request, HTTPException
 from fastapi.params import Query
-from jwt import DecodeError
+from jwt import DecodeError, ExpiredSignatureError
 from pydantic import BaseModel, Field
 
 from services import AuthService
@@ -28,7 +28,7 @@ def get_user_id(access_token: Annotated[str, Depends(get_access_token)])-> int:
     try:
         data = AuthService.decode_token(access_token)
         return data["user_id"]
-    except DecodeError:
+    except (DecodeError, ExpiredSignatureError):
         raise HTTPException(status_code=401, detail="Неверный токен доступа")
 
 UserIdDep = Annotated[int, Depends(get_user_id)]

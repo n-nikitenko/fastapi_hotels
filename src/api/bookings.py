@@ -2,7 +2,7 @@ from fastapi import APIRouter, Body
 from fastapi import HTTPException
 from fastapi.openapi.models import Example
 
-from api.dependencies import DbDep, UserIdDep
+from api.dependencies import DbDep, UserIdDep, PaginationDep
 from schemas import BookingAdd, BookingAddEx
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
@@ -48,3 +48,17 @@ async def create_booking(
     await db.commit()
 
     return {"ok": True, "data": booking}
+
+@router.get("/", summary="Список всех бронирований")
+async def get_bookings(
+        db: DbDep,
+):
+    return await db.bookings.get_all()
+
+
+@router.get("/me", summary="Список бронирований пользователя")
+async def get_user_bookings(
+        user_id: UserIdDep,
+        db: DbDep,
+):
+    return await db.bookings.get_all_filtered(user_id=user_id)
