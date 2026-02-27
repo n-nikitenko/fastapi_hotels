@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Body
 from fastapi import HTTPException
 from fastapi.openapi.models import Example
@@ -21,9 +23,18 @@ async def get_hotels(
             default=None,
             description="Адрес отеля"
         ),
+        from_date: date = Query(example="2026-04-10"),
+        to_date: date = Query(example="2026-04-14"),
 ):
     limit = paginator.limit or 5
-    return await db.hotels.get_all(limit=limit, offset=(paginator.page - 1) * limit, location=location, title=title)
+    return await db.hotels.get_all(
+        limit=limit,
+        offset=(paginator.page - 1) * limit,
+        location=location,
+        title=title,
+        from_date=from_date,
+        to_date=to_date,
+    )
 
 
 @router.delete("/{id}", summary="Удаление отеля")
