@@ -21,16 +21,16 @@ async def create_booking(
                     summary="3 ночи",
                     value={
                         "room_id": 1,
-                        "from_date": "2026-03-01T14:00:00",
-                        "to_date": "2026-03-04T12:00:00",
+                        "from_date": "2026-03-01",
+                        "to_date": "2026-03-04",
                     },
                 ),
                 "2": Example(
                     summary="10 ночей",
                     value={
                         "room_id": 2,
-                        "from_date": "2026-04-10T14:00:00",
-                        "to_date": "2026-04-20T12:00:00",
+                        "from_date": "2026-04-10",
+                        "to_date": "2026-04-20",
                     },
                 )
             }

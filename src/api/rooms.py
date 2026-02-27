@@ -1,5 +1,7 @@
+from datetime import date
+
 from fastapi import APIRouter, Body
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 from fastapi.openapi.models import Example
 
 from api.dependencies import DbDep
@@ -13,11 +15,14 @@ async def raise_if_hotel_not_found(hotel_id: int, repo):
         raise HTTPException(status_code=404, detail=f"Отель c {hotel_id=} не найден")
 
 @router.get("/{hotel_id}/rooms/", summary="Список номеров")
-async def get_hotels(
+async def get_rooms(
         hotel_id: int,
         db: DbDep,
+        from_date: date = Query(example="2026-04-10"),
+        to_date: date = Query(example="2026-04-14"),
 ):
-    return await db.rooms.get_all_filtered(hotel_id=hotel_id)
+    await raise_if_hotel_not_found(hotel_id, db.hotels)
+    return await db.rooms.get_filtered_by_date(hotel_id=hotel_id, from_date=from_date, to_date=to_date)
 
 
 @router.delete("/{hotel_id}/rooms/{id}", summary="Удаление")

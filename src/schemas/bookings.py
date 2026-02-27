@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from typing import Annotated
 
 from pydantic import BaseModel, Field, model_validator
@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field, model_validator
 
 class BookingAdd(BaseModel):
     room_id: Annotated[int, Field(description="Идентификатор номера")]
-    from_date: Annotated[datetime, Field(description="Дата начала бронирования")]
-    to_date: Annotated[datetime, Field(description="Дата окончания бронирования")]
+    from_date: Annotated[date, Field(description="Дата начала бронирования")]
+    to_date: Annotated[date, Field(description="Дата окончания бронирования")]
 
     @model_validator(mode="after")
     def check_dates(self) -> "BookingAdd":
