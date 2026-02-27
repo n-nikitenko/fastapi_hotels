@@ -5,7 +5,7 @@ from sqlalchemy import func, select, Select
 from models import BookingOrm
 
 
-async def get_available_rooms_by_date_stmt(
+def get_available_rooms_by_date_stmt(
         rooms_model,
         from_date: date,
         to_date: date,

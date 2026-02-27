@@ -24,7 +24,7 @@ class HotelRepository(BaseRepository):
         query = select(self._model)
 
         available_rooms_cte = (
-            await get_available_rooms_by_date_stmt(
+            get_available_rooms_by_date_stmt(
                 rooms_model=self._rooms_model,
                 from_date=from_date,
                 to_date=to_date,

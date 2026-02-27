@@ -21,7 +21,7 @@ class RoomRepository(BaseRepository):
         возвращает список свободных номеров в заданном отеле в указанный промежуток дат
         """
 
-        query = await get_available_rooms_by_date_stmt(
+        query = get_available_rooms_by_date_stmt(
             rooms_model=self._model,
             hotel_id=hotel_id,
             from_date=from_date,
