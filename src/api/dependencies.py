@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from services import AuthService
 from utils import DBManager
 from database import session_maker
-from repositories import HotelRepository, RoomRepository, UserRepository, BookingRepository
+from repositories import HotelRepository, RoomRepository, UserRepository, BookingRepository, FacilityRepository
 
 
 class PaginationParams(BaseModel):
@@ -40,6 +40,7 @@ def get_db_manager() -> DBManager:
         user_repo_cls=UserRepository,
         room_repo_cls=RoomRepository,
         bookings_repo_cls=BookingRepository,
+        facilities_repo_cls=FacilityRepository,
     )
 
 async def get_db():
