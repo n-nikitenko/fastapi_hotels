@@ -5,7 +5,7 @@ from fastapi import HTTPException, Query
 from fastapi.openapi.models import Example
 
 from api.dependencies import DbDep
-from schemas import RoomAdd, RoomPatch, RoomAddEx
+from schemas import RoomAdd, RoomPatch, RoomAddEx, RoomFacilityAdd, RoomPatchRequest
 from services import hotel_exists
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
@@ -68,6 +68,10 @@ async def create_room(
     new_room = room_data.model_dump()
     new_room["hotel_id"] = hotel_id
     room =  await db.rooms.create(RoomAddEx.model_validate(new_room))
+    if len( room_data.facilities_ids):
+        await db.rooms_facilities.bulk_create([
+            RoomFacilityAdd(room_id=room.id, facility_id=facility_id) for facility_id in room_data.facilities_ids
+        ])
     await db.commit()
 
     return {"ok": True, "data": room}
@@ -83,6 +87,10 @@ async def update_room(
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     await raise_if_hotel_not_found(room_data.hotel_id, db.hotels)
     room =  await db.rooms.update(room_data, id=room_id, hotel_id=hotel_id)
+    await db.rooms_facilities.sync_room_facilities(
+        room_id= room.id,
+        facility_ids=room_data.facilities_ids,
+    )
     await db.commit()
     if room:
         return {"ok": True , "room": room}
@@ -96,13 +104,24 @@ async def update_room(
 async def patch_room(
         hotel_id: int,
         room_id: int,
-        room_data: RoomPatch,
+        room_data: RoomPatchRequest,
         db: DbDep,
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     if room_data.hotel_id:
         await raise_if_hotel_not_found(room_data.hotel_id, db.hotels)
-    room = await db.rooms.update(room_data, id=room_id, hotel_id=hotel_id, exclude_unset=True)
+    else:
+        room_data.hotel_id = hotel_id
+    room = await db.rooms.update(
+        RoomPatch.model_validate(room_data.model_dump(exclude=set("facilities_ids"), exclude_unset=True)),
+        id=room_id, hotel_id=hotel_id,
+        exclude_unset=True
+    )
+    if room_data.facilities_ids is not None:
+        await db.rooms_facilities.sync_room_facilities(
+            room_id=room.id,
+            facility_ids=room_data.facilities_ids,
+        )
     await db.commit()
     if room:
         return {"ok": True, "room": room}

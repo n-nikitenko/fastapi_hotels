@@ -34,7 +34,7 @@ async def create_facility(
     return {"ok": True, "data": facility}
 
 @router.get("/", summary="Список всех удобств")
-async def get_bookings(
+async def get_facilities(
         db: DbDep,
 ):
     return await db.facilities.get_all()

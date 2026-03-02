@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete
+from sqlalchemy.dialects import postgresql
 
 
 class BaseRepository:
@@ -38,6 +39,13 @@ class BaseRepository:
         stmt = insert(self._model).values(**data.model_dump()).returning(self._model)
         result = await self._session.execute(stmt)
         return self._to_schema(result.scalars().first(), self._schema)
+
+
+    async def bulk_create(self, items: list[BaseModel]):
+        stmt = insert(self._model).values([item.model_dump() for item in items])
+        await self._session.execute(stmt)
+
+
 
 
     async def update(self, data: BaseModel, exclude_unset : bool = False, **filter_by):
