@@ -136,7 +136,7 @@ async def get_room(
         db: DbDep,
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
-    hotel = await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id)
+    hotel = await db.rooms.get_one_or_none_with_rels(id=room_id, hotel_id=hotel_id)
     if not hotel:
         raise HTTPException(status_code=404, detail="Номер не найден")
     return hotel
