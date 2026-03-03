@@ -1,6 +1,4 @@
-from pydantic import BaseModel
-from sqlalchemy import delete
-from sqlalchemy.dialects import postgresql
+from sqlalchemy import delete, select, insert
 
 from models import FacilityOrm, RoomFacilityOrm
 from repositories.base import BaseRepository
@@ -22,22 +20,28 @@ class RoomsFacilitiesRepository(BaseRepository):
             await self.delete(room_id=room_id)
             return
 
+        stmt_select = (
+            select(self._model.id)
+        )
+        result = await self._session.execute(stmt_select)
+        current_facilities_ids = set(result.scalars().all())
+        new_facilities_ids = set(facility_ids)
+
+        ids_for_delete = current_facilities_ids - new_facilities_ids
+        ids_for_add = new_facilities_ids - current_facilities_ids
+
         # удалить все лишние
         stmt_del = (
             delete(self._model)
             .where(self._model.room_id==room_id)
-            .where(self._model.facility_id.not_in(facility_ids))
+            .where(self._model.facility_id.in_(list(ids_for_delete)))
         )
         await self._session.execute(stmt_del)
 
-        # добавить недостающие (insert … on conflict do nothing)
         rows = [
             {"room_id": room_id, "facility_id": fid}
-            for fid in facility_ids
+            for fid in ids_for_add
         ]
 
-        stmt_ins = postgresql.insert(RoomFacilityOrm).values(rows)
-        stmt_ins = stmt_ins.on_conflict_do_nothing(
-            constraint="uq_room_facility"
-        )
+        stmt_ins = insert(RoomFacilityOrm).values(rows)
         await self._session.execute(stmt_ins)
