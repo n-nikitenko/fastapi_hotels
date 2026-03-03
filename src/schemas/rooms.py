@@ -2,6 +2,9 @@ from typing import Annotated, List
 
 from pydantic import BaseModel, Field
 
+from .facilities import Facility
+
+
 class RoomBase(BaseModel):
     title: Annotated[str, Field(description="Название")]
     description: Annotated[str | None, Field(default=None, description="Описание")]
@@ -17,6 +20,9 @@ class RoomAddEx(RoomAdd):
 class Room(RoomBase):
     id: Annotated[int | None, Field(default=None, description="Идентификатор")]
     hotel_id: Annotated[int, Field(description="Идентификатор отеля")]
+
+class RoomWithRels(Room):
+    facilities: Annotated[list[Facility], Field(default_factory=list, description="Удобства")]
 
 
 class RoomPatch(BaseModel):

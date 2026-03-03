@@ -44,7 +44,7 @@ class HotelRepository(BaseRepository):
 
         query = (
             query
-            .where(or_(*filters))
+            .where(*filters)
             .offset(offset)
             .limit(limit)
         )

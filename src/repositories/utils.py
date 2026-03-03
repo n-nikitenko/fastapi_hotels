@@ -42,12 +42,8 @@ def get_available_rooms_by_date_stmt(
 
     query = (
         select(
-            rooms_model.id,
-            rooms_model.hotel_id,
-            rooms_model.title,
-            rooms_model.description,
-            rooms_model.price,
-            rooms_left_table_cte.c.rooms_left.label('quantity')
+            rooms_model,
+            rooms_left_table_cte.c.rooms_left
 
         )
         .join(rooms_left_table_cte, rooms_model.id==rooms_left_table_cte.c.room_id)

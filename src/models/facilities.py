@@ -1,5 +1,5 @@
 from sqlalchemy import BigInteger, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -9,6 +9,8 @@ class FacilityOrm(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     title: Mapped[str]
+
+    rooms: Mapped[list["RoomOrm"]] = relationship(secondary="rooms_facilities", back_populates="facilities")
 
 
 class RoomFacilityOrm(Base):
