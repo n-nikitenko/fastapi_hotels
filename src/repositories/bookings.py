@@ -2,12 +2,12 @@ from sqlalchemy import select, func
 
 from models import BookingOrm
 from repositories.base import BaseRepository
-from schemas import Booking
+from repositories.mappers import BookingDataMapper
 
 
 class BookingRepository(BaseRepository):
     _model = BookingOrm
-    _schema = Booking
+    _mapper= BookingDataMapper
 
     async def room_is_busy(self, room_id, from_date, to_date):
         query = (

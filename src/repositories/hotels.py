@@ -4,13 +4,12 @@ from sqlalchemy import select, or_
 
 from models import HotelOrm, RoomOrm
 from repositories.base import BaseRepository
+from .mappers import HotelDataMapper
 from .utils import get_available_rooms_by_date_stmt
-from schemas import Hotel
 
 
 class HotelRepository(BaseRepository):
-    _model = HotelOrm
-    _schema = Hotel
+    _mapper = HotelDataMapper
     _rooms_model = RoomOrm
 
     async def get_all(self,
@@ -50,4 +49,4 @@ class HotelRepository(BaseRepository):
         )
 
         result = await self._session.execute(query)
-        return [self._to_schema(obj) for obj in result.scalars().all()]
+        return [self._mapper.to_domain_entity(obj) for obj in result.scalars().all()]

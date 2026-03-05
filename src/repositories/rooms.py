@@ -5,13 +5,14 @@ from sqlalchemy.orm import joinedload
 
 from models import RoomOrm
 from .base import BaseRepository
+from .mappers import RoomDataMapper
 from .utils import get_available_rooms_by_date_stmt
-from schemas import Room, RoomWithRels
+from schemas import RoomWithRels
 
 
 class RoomRepository(BaseRepository):
     _model = RoomOrm
-    _schema = Room
+    _mapper = RoomDataMapper
 
     async def get_filtered_by_date(
             self,
@@ -37,7 +38,7 @@ class RoomRepository(BaseRepository):
 
         items = []
         for room_obj, rooms_left in result.unique().all():
-            item = self._to_schema(room_obj, RoomWithRels)
+            item = self._mapper.to_domain_entity(room_obj, schema=RoomWithRels)
             item.quantity = rooms_left
             items.append(item)
 
@@ -53,4 +54,4 @@ class RoomRepository(BaseRepository):
 
         result = await self._session.execute(query)
         obj = result.scalars().unique().one_or_none()
-        return self._to_schema(obj, RoomWithRels)  if obj else None
+        return self._mapper.to_domain_entity(obj, schema=RoomWithRels)  if obj else None
