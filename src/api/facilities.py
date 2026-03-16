@@ -2,6 +2,7 @@ import json
 
 from fastapi import APIRouter, Body
 from fastapi.openapi.models import Example
+from fastapi_cache.decorator import cache
 
 from api.dependencies import DbDep, UserIdDep, PaginationDep
 from connectors import redis_manager
@@ -37,12 +38,8 @@ async def create_facility(
     return {"ok": True, "data": facility}
 
 @router.get("/", summary="Список всех удобств")
+@cache(expire=30)
 async def get_facilities(
         db: DbDep,
 ):
-    facilities = await redis_manager.get_json("facilities")
-    if not facilities:
-        facilities = await db.facilities.get_all()
-        await redis_manager.set_json("facilities", [facility.model_dump() for facility in facilities], ex=30)
-
-    return facilities
+    return await db.facilities.get_all()

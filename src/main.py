@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 import asyncpg
 from sqlalchemy.exc import IntegrityError
 from api import hotels_router, auth_router, rooms_router, booking_router, facility_router
@@ -8,10 +10,10 @@ from connectors import redis_manager
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI):
     await redis_manager.connect()
+    FastAPICache.init(RedisBackend(redis_manager.client), prefix="fastapi-cache")
     yield
-    await redis_manager.close()
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
