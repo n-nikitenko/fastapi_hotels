@@ -1,10 +1,19 @@
-from asyncpg.exceptions import UniqueViolationError
-from fastapi import FastAPI, HTTPException, status
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException
 import asyncpg
 from sqlalchemy.exc import IntegrityError
 from api import hotels_router, auth_router, rooms_router, booking_router, facility_router
+from connectors import redis_manager
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await redis_manager.connect()
+    yield
+    await redis_manager.close()
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(hotels_router)
 app.include_router(rooms_router)
