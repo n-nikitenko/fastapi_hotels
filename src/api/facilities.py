@@ -1,11 +1,9 @@
-import json
-
 from fastapi import APIRouter, Body
 from fastapi.openapi.models import Example
-from fastapi_cache.decorator import cache
+# from fastapi_cache.decorator import cache
 
-from api.dependencies import DbDep, UserIdDep, PaginationDep
-from connectors import redis_manager
+from api.dependencies import DbDep, UserIdDep
+from connectors.cache import cache
 from schemas import FacilityAdd
 
 router = APIRouter(prefix="/facilities", tags=["Удобства"])
@@ -38,7 +36,7 @@ async def create_facility(
     return {"ok": True, "data": facility}
 
 @router.get("/", summary="Список всех удобств")
-@cache(expire=30)
+@cache(exp=5)
 async def get_facilities(
         db: DbDep,
 ):
