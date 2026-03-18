@@ -34,6 +34,33 @@ services:
     networks:
       - hotels_network
 
+  celery:
+    build: .
+    container_name: hotels_celery
+    restart: unless-stopped
+    command:  ["poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "worker", "-l", "info"]
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env
+    networks:
+      - hotels_network
+
+  backend:
+    build: .
+    container_name: hotels_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - hotels_network
+
 volumes:
   postgres_data:
 networks:
