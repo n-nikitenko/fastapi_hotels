@@ -46,6 +46,22 @@ services:
       - .env
     networks:
       - hotels_network
+    volumes:
+      # Слева путь на ПК, справа — путь внутри контейнера
+      - ./src/static/images:/app/src/static/images
+
+  celery_beat:
+    build: .
+    container_name: hotels_celery_beat
+    restart: unless-stopped
+    command: [ "poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "beat", "-l", "info" ]
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - .env
+    networks:
+      - hotels_network
 
   backend:
     build: .
@@ -60,6 +76,9 @@ services:
       - postgres
     networks:
       - hotels_network
+    volumes:
+      # Слева путь на ПК, справа — путь внутри контейнера
+      - ./src/static/images:/app/src/static/images
 
 volumes:
   postgres_data:

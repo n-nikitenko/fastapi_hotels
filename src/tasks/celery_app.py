@@ -9,3 +9,10 @@ celery_app = Celery(
         "tasks.tasks",
     ]
 )
+
+celery_app.conf.beat_schedule = {
+    "bookings": {
+        "task": "booking_today_checkin",
+        "schedule": 5
+    }
+}

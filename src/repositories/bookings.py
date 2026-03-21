@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import select, func
 
 from models import BookingOrm
@@ -24,3 +26,6 @@ class BookingRepository(BaseRepository):
         res = await self._session.execute(query)
         count = res.scalar_one()
         return count > 0
+
+    async def get_with_today_checkin(self):
+        return await self.get_all_filtered(from_date=date.today())

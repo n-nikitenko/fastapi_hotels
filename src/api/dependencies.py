@@ -35,9 +35,9 @@ def get_user_id(access_token: Annotated[str, Depends(get_access_token)])-> int:
 
 UserIdDep = Annotated[int, Depends(get_user_id)]
 
-def get_db_manager() -> DBManager:
+def get_db_manager(session_factory = session_maker) -> DBManager:
     return DBManager(
-        session_maker,
+        session_factory,
         hotel_repo_cls=HotelRepository,
         user_repo_cls=UserRepository,
         room_repo_cls=RoomRepository,

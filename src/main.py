@@ -5,7 +5,7 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 import asyncpg
 from sqlalchemy.exc import IntegrityError
-from api import hotels_router, auth_router, rooms_router, booking_router, facility_router
+from api import hotels_router, auth_router, rooms_router, booking_router, facility_router, images_router
 from connectors import redis_manager
 
 
@@ -21,6 +21,7 @@ app.include_router(hotels_router)
 app.include_router(rooms_router)
 app.include_router(booking_router)
 app.include_router(facility_router)
+app.include_router(images_router)
 
 
 @app.exception_handler(IntegrityError)
