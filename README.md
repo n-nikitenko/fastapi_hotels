@@ -8,3 +8,10 @@ export PYTHONPATH=/src
 
      alembic upgrade head # Применить миграции
 ```
+
+
+## Тестовое окружение
+
+```shell
+     docker compose  -f docker-compose.test.yaml --env-file .env.test up -d
+```
