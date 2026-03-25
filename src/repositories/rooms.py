@@ -11,7 +11,6 @@ from schemas import RoomWithRels
 
 
 class RoomRepository(BaseRepository):
-    _model = RoomOrm
     _mapper = RoomDataMapper
 
     async def get_filtered_by_date(
@@ -26,12 +25,12 @@ class RoomRepository(BaseRepository):
 
         query = (
             get_available_rooms_by_date_stmt(
-                rooms_model=self._model,
+                rooms_model=self._mapper.db_model,
                 hotel_id=hotel_id,
                 from_date=from_date,
                 to_date=to_date,
             )
-            .options(joinedload(self._model.facilities))
+            .options(joinedload(self._mapper.db_model.facilities))
         )
 
         result = await self._session.execute(query)
@@ -47,9 +46,9 @@ class RoomRepository(BaseRepository):
 
     async def get_one_or_none_with_rels(self, **filter_by):
         query = (
-            select(self._model)
+            select(self._mapper.db_model)
             .filter_by(**filter_by)
-            .options(joinedload(self._model.facilities))
+            .options(joinedload(self._mapper.db_model.facilities))
         )
 
         result = await self._session.execute(query)

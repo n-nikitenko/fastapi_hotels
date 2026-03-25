@@ -8,19 +8,18 @@ from repositories.mappers import BookingDataMapper
 
 
 class BookingRepository(BaseRepository):
-    _model = BookingOrm
     _mapper= BookingDataMapper
 
     async def room_is_busy(self, room_id, from_date, to_date):
         query = (
-            select(func.count(self._model.id))
+            select(func.count(self._mapper.db_model.id))
             .where(
-                self._model.room_id==room_id,
+                self._mapper.db_model.room_id==room_id,
                 # диапазоны пересекаются, если:
                 # existing.from_date < new_to_date
                 # и existing.to_date > new_from_date
-                self._model.from_date < to_date,
-                self._model.to_date > from_date,
+                self._mapper.db_model.from_date < to_date,
+                self._mapper.db_model.to_date > from_date,
             )
         )
         res = await self._session.execute(query)

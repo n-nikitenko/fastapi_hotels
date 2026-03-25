@@ -20,7 +20,7 @@ class HotelRepository(BaseRepository):
                 location: str | None = None,
                 title: str | None = None,
                 ):
-        query = select(self._model)
+        query = select(self._mapper.db_model)
 
         available_rooms_cte = (
             get_available_rooms_by_date_stmt(
@@ -35,11 +35,11 @@ class HotelRepository(BaseRepository):
             .distinct()
         )
 
-        filters = [self._model.id.in_(hotels_ids)]
+        filters = [self._mapper.db_model.id.in_(hotels_ids)]
         if location:
-            filters.append(self._model.location.ilike(f"%{location}%"))
+            filters.append(self._mapper.db_model.location.ilike(f"%{location}%"))
         if title:
-            filters.append(self._model.title.ilike(f"%{title}%"))
+            filters.append(self._mapper.db_model.title.ilike(f"%{title}%"))
 
         query = (
             query

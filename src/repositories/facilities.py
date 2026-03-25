@@ -5,12 +5,10 @@ from repositories.base import BaseRepository
 from repositories.mappers import FacilityDataMapper, RoomsFacilitiesDataMapper
 
 class FacilityRepository(BaseRepository):
-    _model = FacilityOrm
     _mapper = FacilityDataMapper
 
 
 class RoomsFacilitiesRepository(BaseRepository):
-    _model = RoomFacilityOrm
     _mapper = RoomsFacilitiesDataMapper
 
 
@@ -20,7 +18,7 @@ class RoomsFacilitiesRepository(BaseRepository):
             return
 
         stmt_select = (
-            select(self._model.id)
+            select(self._mapper.db_model.id)
         )
         result = await self._session.execute(stmt_select)
         current_facilities_ids = set(result.scalars().all())
@@ -31,9 +29,9 @@ class RoomsFacilitiesRepository(BaseRepository):
 
         # удалить все лишние
         stmt_del = (
-            delete(self._model)
-            .where(self._model.room_id==room_id)
-            .where(self._model.facility_id.in_(list(ids_for_delete)))
+            delete(self._mapper.db_model)
+            .where(self._mapper.db_model.room_id==room_id)
+            .where(self._mapper.db_model.facility_id.in_(list(ids_for_delete)))
         )
         await self._session.execute(stmt_del)
 

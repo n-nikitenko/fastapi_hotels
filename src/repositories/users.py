@@ -7,11 +7,10 @@ from schemas.users import UserWithHashedPassword
 
 
 class UserRepository(BaseRepository):
-    _model = UserOrm
     _mapper = UserDataMapper
 
     async def get_user_with_password_or_none(self, **filter_by) -> UserWithHashedPassword | None:
-        query = select(self._model).filter_by(**filter_by)
+        query = select(self._mapper.db_model).filter_by(**filter_by)
         result = await self._session.execute(query)
         obj = result.scalars().one_or_none()
         return self._mapper.to_domain_entity(obj, schema=UserWithHashedPassword) if obj else None
