@@ -35,7 +35,7 @@ async def load_mock_data(file_path: str, db_repo, schema: BaseModel):
             data = json.load(f)
 
         # Валидируем данные через Pydantic схему перед отправкой в БД
-        items_to_add = [schema(**item) for item in data]
+        items_to_add = [schema.model_validate(item) for item in data]
         await db_repo.bulk_create(items_to_add)
 
     except FileNotFoundError:
