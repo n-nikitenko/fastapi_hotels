@@ -14,7 +14,7 @@ class RoomBase(BaseModel):
 class RoomAdd(RoomBase):
     facilities_ids: Annotated[List[int] | None, Field(default=None, description="Удобства")]
 
-class RoomAddEx(RoomAdd):
+class RoomAddEx(RoomBase):
     hotel_id: Annotated[int, Field(description="Идентификатор отеля")]
 
 class Room(RoomBase):

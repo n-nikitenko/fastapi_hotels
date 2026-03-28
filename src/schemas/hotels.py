@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class HotelAdd(BaseModel):
     title: Annotated[str, Field(description="Название отеля")]
     location: Annotated[str, Field(description="Адрес отеля")]
-    stars: Annotated[int, Field(description="Количество звезд", le=5, gt=0)]
+    stars: Annotated[int, Field(default=3, description="Количество звезд", le=5, gt=0)]
 
 
 class Hotel(HotelAdd):
