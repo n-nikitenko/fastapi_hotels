@@ -1,13 +1,18 @@
+import asyncio
 import json
 import logging
+from datetime import date
 from typing import AsyncGenerator, Any
 
 import pytest
 from pydantic import ValidationError, BaseModel
+from sqlalchemy import NullPool
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from src.api.dependencies import get_db_manager
+from database import session_maker_null_pool, engine_null_pool
+from schemas import BookingAddEx
+from src.api.dependencies import get_db_manager, get_db
 from src.config import settings
-from src.database import engine_null_pool, session_maker_null_pool
 from src.main import app
 from src.models import *
 from httpx import ASGITransport, AsyncClient
@@ -24,17 +29,17 @@ def check_test_mode():
     assert settings.MODE=='TEST'
 
 
-@pytest.fixture()
-async def db() -> AsyncGenerator[DBManager, Any]:
-    async with get_db_manager(session_factory=session_maker_null_pool) as db:
-        yield db
-
-
 @pytest.fixture(scope="session", autouse=True)
 async def init_db(check_test_mode):
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+
+
+@pytest.fixture()
+async def db() -> AsyncGenerator[DBManager, Any]:
+    async with get_db_manager(session_factory=session_maker_null_pool) as db:
+        yield db
 
 
 async def load_mock_data(file_path: str, db_repo, schema: type[BaseModel]):
@@ -77,10 +82,18 @@ async def fill_db(init_db):
 
 @pytest.fixture(scope="session")
 async def async_client(fill_db) -> AsyncGenerator[AsyncClient, Any]:
+    async def _override_get_db():
+        async with get_db_manager(session_factory=session_maker_null_pool) as db:
+            yield db
+
+    app.dependency_overrides[get_db] = _override_get_db
+
     async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         yield ac
+
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture(scope="session", autouse=True)

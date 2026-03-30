@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, AsyncGenerator, Any
 
 from fastapi import Depends, Request, HTTPException
 from fastapi.params import Query
@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 from services import AuthService
 from utils import DBManager
-from database import session_maker
 from repositories import (
     HotelRepository, RoomRepository, UserRepository, BookingRepository, FacilityRepository, RoomsFacilitiesRepository,
 )
@@ -35,7 +34,11 @@ def get_user_id(access_token: Annotated[str, Depends(get_access_token)])-> int:
 
 UserIdDep = Annotated[int, Depends(get_user_id)]
 
-def get_db_manager(session_factory = session_maker) -> DBManager:
+def get_db_manager(session_factory = None) -> DBManager:
+    from src.database import session_maker
+    if session_factory is None:
+        session_factory = session_maker
+
     return DBManager(
         session_factory,
         hotel_repo_cls=HotelRepository,
@@ -46,7 +49,7 @@ def get_db_manager(session_factory = session_maker) -> DBManager:
         rooms_facilities_repo_cls=RoomsFacilitiesRepository,
     )
 
-async def get_db():
+async def get_db() -> AsyncGenerator[DBManager, Any]:
     async with get_db_manager() as db:
         yield db
 

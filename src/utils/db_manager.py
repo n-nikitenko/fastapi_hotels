@@ -28,6 +28,7 @@ class DBManager:
 
     async def __aenter__(self):
         self.session = self.session_factory()
+        await self.session.begin()
         self._committed = False
         self._rolled_back = False
         self.hotels = self.hotel_repo_cls(self.session)

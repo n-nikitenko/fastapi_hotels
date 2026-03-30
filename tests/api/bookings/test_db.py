@@ -5,6 +5,7 @@ import pytest
 from schemas import BookingAddEx
 
 
+
 @pytest.fixture()
 async def test_booking_data(db) -> BookingAddEx:
     user = (await db.users.get_all())[0]
