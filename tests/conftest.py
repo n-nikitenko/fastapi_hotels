@@ -1,23 +1,34 @@
 import json
 import logging
+from typing import AsyncGenerator, Any
 
 import pytest
 from pydantic import ValidationError, BaseModel
 
-from api.dependencies import get_db_manager
-from config import settings
-from database import engine_null_pool, session_maker_null_pool
-from main import app
-from models import *
+from src.api.dependencies import get_db_manager
+from src.config import settings
+from src.database import engine_null_pool, session_maker_null_pool
+from src.main import app
+from src.models import *
 from httpx import ASGITransport, AsyncClient
 
-from schemas import UserRequestAdd, HotelAdd, RoomAdd, RoomAddEx
+from src.schemas import HotelAdd, RoomAddEx
+from src.utils import DBManager
+
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode():
-    assert settings.MODE == 'TEST'
+    assert settings.MODE=='TEST'
+
+
+@pytest.fixture()
+async def db() -> AsyncGenerator[DBManager, Any]:
+    async with get_db_manager(session_factory=session_maker_null_pool) as db:
+        yield db
+
 
 @pytest.fixture(scope="session", autouse=True)
 async def init_db(check_test_mode):
@@ -26,7 +37,7 @@ async def init_db(check_test_mode):
         await conn.run_sync(Base.metadata.create_all)
 
 
-async def load_mock_data(file_path: str, db_repo, schema: BaseModel):
+async def load_mock_data(file_path: str, db_repo, schema: type[BaseModel]):
     """
     Универсальная функция для загрузки данных из JSON в БД.
     """
@@ -64,15 +75,20 @@ async def fill_db(init_db):
         await db.commit()
 
 
-@pytest.fixture(scope="session", autouse=True)
-async def register_user(fill_db):
+@pytest.fixture(scope="session")
+async def async_client(fill_db) -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        await ac.post(
-            url="/auth/register",
-            json={
-                "email": "test_user@mail.ru",
-                "password": "123456"
-            }
-        )
+        yield ac
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def register_user(async_client):
+    await async_client.post(
+        url="/auth/register",
+        json={
+            "email": "test_user@mail.ru",
+            "password": "123456"
+        }
+    )
