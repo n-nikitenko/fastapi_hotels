@@ -9,6 +9,5 @@ async def test_get_hotels(async_client):
             "to_date": "2026-04-10"
         }
     )
-    print(f"{response=}")
 
     assert response.status_code == HTTP_200_OK

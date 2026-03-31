@@ -8,6 +8,9 @@ import pytest
 from pydantic import ValidationError, BaseModel
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+from starlette.status import HTTP_200_OK
 
 from database import session_maker_null_pool, engine_null_pool
 from schemas import BookingAddEx
@@ -22,11 +25,53 @@ from src.utils import DBManager
 
 
 logger = logging.getLogger(__name__)
+TEST_USER_EMAIL = "test_user@mail.ru"
+TEST_USER_PASSWORD = "123456"
 
 
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode():
     assert settings.MODE=='TEST'
+
+
+@pytest.fixture(scope="session")
+def test_user_credentials() -> dict[str, str]:
+    return {
+        "email": TEST_USER_EMAIL,
+        "password": TEST_USER_PASSWORD,
+    }
+
+
+class NoOpBackend:
+    """Backend-заглушка для тестов, который ничего не кэширует"""
+    
+    async def get(self, key):
+        return None
+    
+    async def set(self, key, value, expire=None):
+        pass
+    
+    async def clear(self, namespace=None, key=None):
+        pass
+
+
+@pytest.fixture(scope="session", autouse=True)
+def disable_cache():
+    """Отключает кэширование по умолчанию для воспроизводимости тестов"""
+    FastAPICache.init(NoOpBackend(), prefix="test-cache")
+
+
+@pytest.fixture(scope="session")
+def enable_cache():
+    """
+    Опциональная фикстура для тестов, которым нужно проверить кэширование.
+    
+    Использование:
+        async def test_with_cache(async_client, enable_cache):
+            # Кэширование работает с InMemoryBackend
+            response = await async_client.get("/facilities/")
+    """
+    FastAPICache.init(InMemoryBackend(), prefix="test-cache")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -97,11 +142,22 @@ async def async_client(fill_db) -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def register_user(async_client):
+async def register_user(async_client, test_user_credentials):
     await async_client.post(
         url="/auth/register",
-        json={
-            "email": "test_user@mail.ru",
-            "password": "123456"
-        }
+        json=test_user_credentials,
     )
+
+
+@pytest.fixture(scope="session")
+async def auth_async_client(async_client, register_user, test_user_credentials) -> AsyncClient:
+    """
+    Клиент с установленной auth-cookie.
+    Используйте в тестах, где нужен авторизованный пользователь.
+    """
+    response = await async_client.post(
+        url="/auth/login",
+        json=test_user_credentials,
+    )
+    assert response.status_code == HTTP_200_OK
+    return async_client

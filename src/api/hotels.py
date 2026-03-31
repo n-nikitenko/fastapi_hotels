@@ -23,8 +23,8 @@ async def get_hotels(
             default=None,
             description="Адрес отеля"
         ),
-        from_date: date = Query(example="2026-04-10"),
-        to_date: date = Query(example="2026-04-14"),
+        from_date: date = Query(examples=["2026-04-10"]),
+        to_date: date = Query(examples=["2026-04-14"]),
 ):
     limit = paginator.limit or 5
     return await db.hotels.get_all(

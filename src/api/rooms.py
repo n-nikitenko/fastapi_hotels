@@ -18,8 +18,8 @@ async def raise_if_hotel_not_found(hotel_id: int, repo):
 async def get_rooms(
         hotel_id: int,
         db: DbDep,
-        from_date: date = Query(example="2026-04-10"),
-        to_date: date = Query(example="2026-04-14"),
+        from_date: date = Query(examples=["2026-04-10"]),
+        to_date: date = Query(examples=["2026-04-14"]),
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     return await db.rooms.get_filtered_by_date(hotel_id=hotel_id, from_date=from_date, to_date=to_date)
