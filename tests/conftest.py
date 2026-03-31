@@ -1,25 +1,20 @@
-import asyncio
 import json
 import logging
-from datetime import date
-from typing import AsyncGenerator, Any
+from typing import AsyncGenerator, Any, Tuple, Optional
 
 import pytest
-from pydantic import ValidationError, BaseModel
-from sqlalchemy import NullPool
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from fastapi_cache import FastAPICache
+from fastapi_cache import FastAPICache, Backend
 from fastapi_cache.backends.inmemory import InMemoryBackend
+from httpx import ASGITransport, AsyncClient
+from pydantic import ValidationError, BaseModel
 from starlette.status import HTTP_200_OK
 
+import tasks
 from database import session_maker_null_pool, engine_null_pool
-from schemas import BookingAddEx
 from src.api.dependencies import get_db_manager, get_db
 from src.config import settings
 from src.main import app
 from src.models import *
-from httpx import ASGITransport, AsyncClient
-
 from src.schemas import HotelAdd, RoomAddEx
 from src.utils import DBManager
 
@@ -42,15 +37,18 @@ def test_user_credentials() -> dict[str, str]:
     }
 
 
-class NoOpBackend:
+class NoOpBackend(Backend):
     """Backend-заглушка для тестов, который ничего не кэширует"""
-    
+
+    async def get_with_ttl(self, key: str) -> Tuple[int, Optional[bytes]]:
+        return 0, None
+
     async def get(self, key):
         return None
-    
+
     async def set(self, key, value, expire=None):
         pass
-    
+
     async def clear(self, namespace=None, key=None):
         pass
 
@@ -59,6 +57,15 @@ class NoOpBackend:
 def disable_cache():
     """Отключает кэширование по умолчанию для воспроизводимости тестов"""
     FastAPICache.init(NoOpBackend(), prefix="test-cache")
+
+
+@pytest.fixture(autouse=True)
+def disable_celery_tasks(monkeypatch):
+    """
+    Отключает отправку celery-задач в брокер во время тестов.
+    """
+    monkeypatch.setattr(tasks.test_task, "delay", lambda *args, **kwargs: None)
+    monkeypatch.setattr(tasks.resize_image, "delay", lambda *args, **kwargs: None)
 
 
 @pytest.fixture(scope="session")
@@ -159,5 +166,10 @@ async def auth_async_client(async_client, register_user, test_user_credentials) 
         url="/auth/login",
         json=test_user_credentials,
     )
-    assert response.status_code == HTTP_200_OK
+    assert response.status_code==HTTP_200_OK
+    access_token_from_body = response.json().get("access_token")
+    access_token_from_cookie = async_client.cookies.get("access_token")
+    assert access_token_from_body, "В ответе логина отсутствует access_token"
+    assert access_token_from_cookie, "После логина не установился access_token cookie"
+    assert access_token_from_cookie==access_token_from_body, "Токен в cookie не совпадает с токеном в response body"
     return async_client
