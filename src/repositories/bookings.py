@@ -12,12 +12,13 @@ class BookingRepository(BaseRepository):
     _mapper= BookingDataMapper
     _rooms_model = RoomOrm
 
-    async def room_is_busy(self, room_id, from_date, to_date):
+    async def room_is_busy(self, room_id, from_date, to_date, hotel_id):
         query = (
             get_available_rooms_by_date_stmt(
                 rooms_model=self._rooms_model,
                 from_date=from_date,
-                to_date=to_date
+                to_date=to_date,
+                hotel_id=hotel_id
             )
         )
         result = await self._session.execute(query)

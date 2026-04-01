@@ -39,7 +39,7 @@ async def create_booking(
     room =  await db.rooms.get_one_or_none(id=booking_data.room_id)
     if not room:
         raise HTTPException(status_code=404, detail=f"Номер c room_id={booking_data.room_id} не найден")
-    if await db.bookings.room_is_busy(booking_data.room_id, booking_data.from_date, booking_data.to_date):
+    if await db.bookings.room_is_busy(booking_data.room_id, booking_data.from_date, booking_data.to_date, hotel_id=room.hotel_id):
         raise HTTPException(status_code=404, detail=f"Номер c room_id={booking_data.room_id} уже забронирован")
     new_booking = booking_data.model_dump()
     new_booking["user_id"] = user_id
