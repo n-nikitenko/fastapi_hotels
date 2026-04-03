@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, EmailStr
 
 class UserRequestAdd(BaseModel):
     email: Annotated[EmailStr, Field(description="Логин пользователя")]
-    password: Annotated[str, Field(description="Пароль пользователя")]
+    password: Annotated[str, Field(description="Пароль пользователя", min_length=6)]
 
 class UserAdd(BaseModel):
     email: Annotated[EmailStr, Field(description="Логин пользователя")]
