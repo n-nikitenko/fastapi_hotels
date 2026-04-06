@@ -2,63 +2,76 @@ from fastapi import APIRouter, Body
 from fastapi import HTTPException
 from fastapi.openapi.models import Example
 
-from api.dependencies import DbDep, UserIdDep, PaginationDep
+from api.dependencies import DbDep, UserIdDep
 from schemas import BookingAdd, BookingAddEx
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
+
 
 async def raise_if_room_not_found(room_id: int, repo):
     if not await repo.get_one_or_none(id=room_id):
         raise HTTPException(status_code=404, detail=f"Номер c {room_id=} не найден")
 
+
 @router.post("/", summary="Создание брони")
 async def create_booking(
-        db: DbDep,
-        user_id: UserIdDep,
-        booking_data: BookingAdd = Body(
-            openapi_examples={
-                "1": Example(
-                    summary="3 ночи",
-                    value={
-                        "room_id": 1,
-                        "from_date": "2026-03-01",
-                        "to_date": "2026-03-04",
-                    },
-                ),
-                "2": Example(
-                    summary="10 ночей",
-                    value={
-                        "room_id": 2,
-                        "from_date": "2026-04-10",
-                        "to_date": "2026-04-20",
-                    },
-                )
-            }
-        )
+    db: DbDep,
+    user_id: UserIdDep,
+    booking_data: BookingAdd = Body(
+        openapi_examples={
+            "1": Example(
+                summary="3 ночи",
+                value={
+                    "room_id": 1,
+                    "from_date": "2026-03-01",
+                    "to_date": "2026-03-04",
+                },
+            ),
+            "2": Example(
+                summary="10 ночей",
+                value={
+                    "room_id": 2,
+                    "from_date": "2026-04-10",
+                    "to_date": "2026-04-20",
+                },
+            ),
+        }
+    ),
 ):
-    room =  await db.rooms.get_one_or_none(id=booking_data.room_id)
+    room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     if not room:
-        raise HTTPException(status_code=404, detail=f"Номер c room_id={booking_data.room_id} не найден")
-    if await db.bookings.room_is_busy(booking_data.room_id, booking_data.from_date, booking_data.to_date, hotel_id=room.hotel_id):
-        raise HTTPException(status_code=404, detail=f"Номер c room_id={booking_data.room_id} уже забронирован")
+        raise HTTPException(
+            status_code=404, detail=f"Номер c room_id={booking_data.room_id} не найден"
+        )
+    if await db.bookings.room_is_busy(
+        booking_data.room_id,
+        booking_data.from_date,
+        booking_data.to_date,
+        hotel_id=room.hotel_id,
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Номер c room_id={booking_data.room_id} уже забронирован",
+        )
     new_booking = booking_data.model_dump()
     new_booking["user_id"] = user_id
     new_booking["price"] = room.price
-    booking =  await db.bookings.create(BookingAddEx.model_validate(new_booking))
+    booking = await db.bookings.create(BookingAddEx.model_validate(new_booking))
     await db.commit()
 
     return {"ok": True, "data": booking}
 
+
 @router.get("/", summary="Список всех бронирований")
 async def get_bookings(
-        db: DbDep,
+    db: DbDep,
 ):
     return await db.bookings.get_all()
 
 
 @router.get("/me", summary="Список бронирований пользователя")
 async def get_user_bookings(
-        user_id: UserIdDep,
-        db: DbDep,
+    user_id: UserIdDep,
+    db: DbDep,
 ):
     return await db.bookings.get_all_filtered(user_id=user_id)

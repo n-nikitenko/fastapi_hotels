@@ -2,8 +2,10 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
+
 class FacilityAdd(BaseModel):
     title: Annotated[str, Field(description="Название")]
+
 
 class Facility(FacilityAdd):
     id: Annotated[int | None, Field(default=None, description="Идентификатор")]

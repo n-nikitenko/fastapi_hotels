@@ -14,7 +14,7 @@ from database import session_maker_null_pool, engine_null_pool
 from src.api.dependencies import get_db_manager, get_db
 from src.config import settings
 from src.main import app
-from src.models import *
+from src.models import *  # noqa: F403
 from src.schemas import HotelAdd, RoomAddEx
 from src.utils import DBManager
 
@@ -26,7 +26,7 @@ TEST_USER_PASSWORD = "123456"
 
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode():
-    assert settings.MODE=='TEST'
+    assert settings.MODE == "TEST"
 
 
 @pytest.fixture(scope="session")
@@ -72,7 +72,7 @@ def disable_celery_tasks(monkeypatch):
 def enable_cache():
     """
     Опциональная фикстура для тестов, которым нужно проверить кэширование.
-    
+
     Использование:
         async def test_with_cache(async_client, enable_cache):
             # Кэширование работает с InMemoryBackend
@@ -99,7 +99,7 @@ async def load_mock_data(file_path: str, db_repo, schema: type[BaseModel]):
     Универсальная функция для загрузки данных из JSON в БД.
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         # Валидируем данные через Pydantic схему перед отправкой в БД
@@ -124,10 +124,10 @@ async def load_mock_data(file_path: str, db_repo, schema: type[BaseModel]):
 async def fill_db(init_db):
     async with get_db_manager(session_factory=session_maker_null_pool) as db:
         # Загружаем отели
-        await load_mock_data('tests/mock_hotels.json', db.hotels, HotelAdd)
+        await load_mock_data("tests/mock_hotels.json", db.hotels, HotelAdd)
 
         # Загружаем номера
-        await load_mock_data('tests/mock_rooms.json', db.rooms, RoomAddEx)
+        await load_mock_data("tests/mock_rooms.json", db.rooms, RoomAddEx)
 
         await db.commit()
 
@@ -140,9 +140,7 @@ async def async_client(fill_db) -> AsyncGenerator[AsyncClient, Any]:
 
     app.dependency_overrides[get_db] = _override_get_db
 
-    async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
     app.dependency_overrides.clear()
@@ -166,10 +164,12 @@ async def auth_async_client(async_client, register_user, test_user_credentials) 
         url="/auth/login",
         json=test_user_credentials,
     )
-    assert response.status_code==HTTP_200_OK
+    assert response.status_code == HTTP_200_OK
     access_token_from_body = response.json().get("access_token")
     access_token_from_cookie = async_client.cookies.get("access_token")
     assert access_token_from_body, "В ответе логина отсутствует access_token"
     assert access_token_from_cookie, "После логина не установился access_token cookie"
-    assert access_token_from_cookie==access_token_from_body, "Токен в cookie не совпадает с токеном в response body"
+    assert access_token_from_cookie == access_token_from_body, (
+        "Токен в cookie не совпадает с токеном в response body"
+    )
     return async_client

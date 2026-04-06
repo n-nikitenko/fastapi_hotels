@@ -21,6 +21,7 @@ async def test_booking_data(db) -> BookingAddEx:
         price=6000,
     )
 
+
 @pytest.fixture(scope="module")
 async def remove_all_bookings():
     async with get_db_manager(session_factory=session_maker_null_pool) as db:

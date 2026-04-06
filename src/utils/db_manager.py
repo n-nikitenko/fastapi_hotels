@@ -3,10 +3,11 @@ from typing import Type
 
 logger = logging.getLogger(__name__)
 
+
 class DBManager:
     def __init__(
-            self,
-            session_factory,
+        self,
+        session_factory,
         hotel_repo_cls: Type,
         room_repo_cls: Type,
         user_repo_cls: Type,
@@ -24,7 +25,6 @@ class DBManager:
         self.bookings_repo_cls = bookings_repo_cls
         self.facilities_repo_cls = facilities_repo_cls
         self.rooms_facility_repo_cls = rooms_facilities_repo_cls
-
 
     async def __aenter__(self):
         self.session = self.session_factory()

@@ -1,7 +1,12 @@
+import typing
+
 from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
+if typing.TYPE_CHECKING:
+    from .facilities import FacilityOrm
 
 
 class RoomOrm(Base):
@@ -14,4 +19,6 @@ class RoomOrm(Base):
     price: Mapped[int] = mapped_column(BigInteger)
     quantity: Mapped[int]
 
-    facilities: Mapped[list["FacilityOrm"]] = relationship(secondary="rooms_facilities", back_populates="rooms")
+    facilities: Mapped[list["FacilityOrm"]] = relationship(
+        secondary="rooms_facilities", back_populates="rooms"
+    )

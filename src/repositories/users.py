@@ -1,6 +1,5 @@
 from sqlalchemy import select
 
-from models import UserOrm
 from .base import BaseRepository
 from .mappers import UserDataMapper
 from schemas.users import UserWithHashedPassword

@@ -5,12 +5,13 @@ from schemas import UserRequestAdd, UserAdd
 
 from services import AuthService
 
-router = APIRouter(prefix="/auth", tags = ["Аутентификация и авторизация"])
+router = APIRouter(prefix="/auth", tags=["Аутентификация и авторизация"])
+
 
 @router.post("/register", summary="Регистрация")
 async def register_user(
-        data: UserRequestAdd,
-        db: DbDep,
+    data: UserRequestAdd,
+    db: DbDep,
 ):
     hashed_password = AuthService().get_password_hash(data.password)
 
@@ -24,9 +25,9 @@ async def register_user(
 
 @router.post("/login", summary="Вход")
 async def login_user(
-        data: UserRequestAdd,
-        response: Response,
-        db: DbDep,
+    data: UserRequestAdd,
+    response: Response,
+    db: DbDep,
 ):
     user = await db.users.get_user_with_password_or_none(email=data.email)
     if not user or not AuthService().verify_password(data.password, user.hashed_password):
@@ -39,9 +40,9 @@ async def login_user(
 
 @router.post("/logout", summary="Выход")
 async def logout_user(
-        user_id: UserIdDep,
-        response: Response,
-        db: DbDep,
+    user_id: UserIdDep,
+    response: Response,
+    db: DbDep,
 ):
     await db.users.get_one_or_none(id=user_id)
     response.delete_cookie("access_token")
@@ -50,8 +51,8 @@ async def logout_user(
 
 @router.get("/me")
 async def get_me(
-        user_id: UserIdDep,
-        db: DbDep,
+    user_id: UserIdDep,
+    db: DbDep,
 ):
     user = await db.users.get_one_or_none(id=user_id)
     return user

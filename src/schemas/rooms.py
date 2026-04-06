@@ -11,15 +11,19 @@ class RoomBase(BaseModel):
     price: Annotated[int, Field(description="Стоимость", gt=0)]
     quantity: Annotated[int, Field(description="Количество", ge=0)]
 
+
 class RoomAdd(RoomBase):
     facilities_ids: Annotated[List[int] | None, Field(default=None, description="Удобства")]
+
 
 class RoomAddEx(RoomBase):
     hotel_id: Annotated[int, Field(description="Идентификатор отеля")]
 
+
 class Room(RoomBase):
     id: Annotated[int | None, Field(default=None, description="Идентификатор")]
     hotel_id: Annotated[int, Field(description="Идентификатор отеля")]
+
 
 class RoomWithRels(Room):
     facilities: Annotated[list[Facility], Field(default_factory=list, description="Удобства")]

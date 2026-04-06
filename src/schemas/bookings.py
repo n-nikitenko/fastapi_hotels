@@ -15,9 +15,11 @@ class BookingAdd(BaseModel):
             raise ValueError("Дата окончания бронирования должна быть позже даты начала")
         return self
 
+
 class BookingAddEx(BookingAdd):
     user_id: Annotated[int, Field(description="Идентификатор пользователя")]
     price: Annotated[int, Field(description="Стоимость", gt=0)]
+
 
 class Booking(BookingAddEx):
     id: Annotated[int | None, Field(default=None, description="Идентификатор")]

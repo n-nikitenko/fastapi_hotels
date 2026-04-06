@@ -27,17 +27,18 @@ class BaseRepository:
         obj = result.scalars().one_or_none()
         return self._mapper.to_domain_entity(obj) if obj else None
 
-
     async def create(self, data: BaseModel):
-        stmt = insert(self._mapper.db_model).values(**data.model_dump()).returning(self._mapper.db_model)
+        stmt = (
+            insert(self._mapper.db_model)
+            .values(**data.model_dump())
+            .returning(self._mapper.db_model)
+        )
         result = await self._session.execute(stmt)
         return self._mapper.to_domain_entity(result.scalars().first())
-
 
     async def bulk_create(self, items: list[BaseModel]):
         stmt = insert(self._mapper.db_model).values([item.model_dump() for item in items])
         await self._session.execute(stmt)
-
 
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by):
         stmt = (
@@ -48,7 +49,6 @@ class BaseRepository:
         )
         result = await self._session.execute(stmt)
         return self._mapper.to_domain_entity(result.scalars().first())
-
 
     async def delete(self, **filter_by) -> None:
         stmt = delete(self._mapper.db_model).filter_by(**filter_by)

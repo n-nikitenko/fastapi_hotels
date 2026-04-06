@@ -221,6 +221,7 @@ class RedisManager:
 
 # Пример использования
 
+
 async def main() -> None:
     logging.basicConfig(
         level=logging.INFO,

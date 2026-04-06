@@ -1,28 +1,24 @@
 from datetime import date
 
-import pytest
-
-from schemas import BookingAddEx
-
 
 async def test_crud(db, test_booking_data):
     # create
     result = await db.bookings.create(test_booking_data)
     assert result.id is not None
-    assert result.room_id==test_booking_data.room_id
-    assert result.user_id==test_booking_data.user_id
-    assert result.from_date==test_booking_data.from_date
-    assert result.to_date==test_booking_data.to_date
-    assert result.price==test_booking_data.price
+    assert result.room_id == test_booking_data.room_id
+    assert result.user_id == test_booking_data.user_id
+    assert result.from_date == test_booking_data.from_date
+    assert result.to_date == test_booking_data.to_date
+    assert result.price == test_booking_data.price
 
     # read
     booking_from_db = await db.bookings.get_one_or_none(id=result.id)
-    assert booking_from_db.id==result.id
-    assert booking_from_db.room_id==test_booking_data.room_id
-    assert booking_from_db.user_id==test_booking_data.user_id
-    assert booking_from_db.from_date==test_booking_data.from_date
-    assert booking_from_db.to_date==test_booking_data.to_date
-    assert booking_from_db.price==test_booking_data.price
+    assert booking_from_db.id == result.id
+    assert booking_from_db.room_id == test_booking_data.room_id
+    assert booking_from_db.user_id == test_booking_data.user_id
+    assert booking_from_db.from_date == test_booking_data.from_date
+    assert booking_from_db.to_date == test_booking_data.to_date
+    assert booking_from_db.price == test_booking_data.price
 
     # update
     booking_from_db.from_date = date(2026, 2, 25)
@@ -32,20 +28,20 @@ async def test_crud(db, test_booking_data):
         data=booking_from_db,
     )
 
-    assert updated_booking.id==result.id
-    assert updated_booking.room_id==booking_from_db.room_id
-    assert updated_booking.user_id==booking_from_db.user_id
-    assert updated_booking.from_date==booking_from_db.from_date
-    assert updated_booking.to_date==booking_from_db.to_date
+    assert updated_booking.id == result.id
+    assert updated_booking.room_id == booking_from_db.room_id
+    assert updated_booking.user_id == booking_from_db.user_id
+    assert updated_booking.from_date == booking_from_db.from_date
+    assert updated_booking.to_date == booking_from_db.to_date
 
     # read
     booking_from_db = await db.bookings.get_one_or_none(id=updated_booking.id)
-    assert booking_from_db.id==updated_booking.id
-    assert booking_from_db.room_id==updated_booking.room_id
-    assert booking_from_db.user_id==updated_booking.user_id
-    assert booking_from_db.from_date==updated_booking.from_date
-    assert booking_from_db.to_date==updated_booking.to_date
-    assert booking_from_db.price==updated_booking.price
+    assert booking_from_db.id == updated_booking.id
+    assert booking_from_db.room_id == updated_booking.room_id
+    assert booking_from_db.user_id == updated_booking.user_id
+    assert booking_from_db.from_date == updated_booking.from_date
+    assert booking_from_db.to_date == updated_booking.to_date
+    assert booking_from_db.price == updated_booking.price
 
     # delete
     await db.bookings.delete(id=updated_booking.id)

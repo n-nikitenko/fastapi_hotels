@@ -1,8 +1,8 @@
 from datetime import date
 
-from sqlalchemy import select, or_
+from sqlalchemy import select
 
-from models import HotelOrm, RoomOrm
+from models import RoomOrm
 from repositories.base import BaseRepository
 from .mappers import HotelDataMapper
 from .utils import get_available_rooms_by_date_stmt
@@ -12,14 +12,15 @@ class HotelRepository(BaseRepository):
     _mapper = HotelDataMapper
     _rooms_model = RoomOrm
 
-    async def get_all(self,
-                limit: int,
-                offset: int,
-                from_date: date,
-                to_date: date,
-                location: str | None = None,
-                title: str | None = None,
-                ):
+    async def get_all(
+        self,
+        limit: int,
+        offset: int,
+        from_date: date,
+        to_date: date,
+        location: str | None = None,
+        title: str | None = None,
+    ):
         query = select(self._mapper.db_model)
 
         available_rooms_cte = (
@@ -30,10 +31,7 @@ class HotelRepository(BaseRepository):
             )
         ).cte("available_rooms")
 
-        hotels_ids = (
-            select(available_rooms_cte.c.hotel_id)
-            .distinct()
-        )
+        hotels_ids = select(available_rooms_cte.c.hotel_id).distinct()
 
         filters = [self._mapper.db_model.id.in_(hotels_ids)]
         if location:
@@ -41,12 +39,7 @@ class HotelRepository(BaseRepository):
         if title:
             filters.append(self._mapper.db_model.title.ilike(f"%{title}%"))
 
-        query = (
-            query
-            .where(*filters)
-            .offset(offset)
-            .limit(limit)
-        )
+        query = query.where(*filters).offset(offset).limit(limit)
 
         result = await self._session.execute(query)
         return [self._mapper.to_domain_entity(obj) for obj in result.scalars().all()]

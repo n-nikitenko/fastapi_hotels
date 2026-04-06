@@ -9,6 +9,7 @@ async def test_get_facilities(async_client):
     assert response.status_code == HTTP_200_OK
     assert isinstance(response.json(), list)
 
+
 async def test_create_facility(auth_async_client):
     title = "Душ в номере"
     response = await auth_async_client.post(

@@ -5,4 +5,12 @@ from .users import UserOrm
 from .bookings import BookingOrm
 from .facilities import FacilityOrm, RoomFacilityOrm
 
-__all__=["Base", "HotelOrm", "RoomOrm", "UserOrm", "BookingOrm", "FacilityOrm", "RoomFacilityOrm"]
+__all__ = [
+    "Base",
+    "HotelOrm",
+    "RoomOrm",
+    "UserOrm",
+    "BookingOrm",
+    "FacilityOrm",
+    "RoomFacilityOrm",
+]

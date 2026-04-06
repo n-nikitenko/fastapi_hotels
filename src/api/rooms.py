@@ -10,26 +10,30 @@ from services import hotel_exists
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
+
 async def raise_if_hotel_not_found(hotel_id: int, repo):
     if not await hotel_exists(hotel_id, repo):
         raise HTTPException(status_code=404, detail=f"Отель c {hotel_id=} не найден")
 
+
 @router.get("/{hotel_id}/rooms/", summary="Список номеров")
 async def get_rooms(
-        hotel_id: int,
-        db: DbDep,
-        from_date: date = Query(examples=["2026-04-10"]),
-        to_date: date = Query(examples=["2026-04-14"]),
+    hotel_id: int,
+    db: DbDep,
+    from_date: date = Query(examples=["2026-04-10"]),
+    to_date: date = Query(examples=["2026-04-14"]),
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
-    return await db.rooms.get_filtered_by_date(hotel_id=hotel_id, from_date=from_date, to_date=to_date)
+    return await db.rooms.get_filtered_by_date(
+        hotel_id=hotel_id, from_date=from_date, to_date=to_date
+    )
 
 
 @router.delete("/{hotel_id}/rooms/{id}", summary="Удаление")
 async def remove_room(
-        hotel_id: int,
-        room_id: int,
-        db: DbDep,
+    hotel_id: int,
+    room_id: int,
+    db: DbDep,
 ):
     await db.rooms.delete(id=room_id, hotel_id=hotel_id)
     await db.commit()
@@ -38,40 +42,43 @@ async def remove_room(
 
 @router.post("/{hotel_id}/rooms/", summary="Создание")
 async def create_room(
-        hotel_id: int,
-        db: DbDep,
-        room_data: RoomAdd = Body(
-            openapi_examples={
-                "1": Example(
-                    summary="SGL",
-                    value={
-                        "title": "Одноместный",
-                        "description": "Предназначен для размещения одного человека и комплектуется одной кроватью.",
-                        "price": 6000,
-                        "quantity":300,
-                    }
-                ),
-                "2": Example(
-                    summary="DBL",
-                    value={
-                        "title": "Двухместный с одной кроватью",
-                        "description": " Предусматривает установку одной двуспальной кровати и проживание "
-                                       "двух постояльцев.",
-                        "price": 12000,
-                        "quantity": 150,
-                    }
-                )
-            }
-        )
+    hotel_id: int,
+    db: DbDep,
+    room_data: RoomAdd = Body(
+        openapi_examples={
+            "1": Example(
+                summary="SGL",
+                value={
+                    "title": "Одноместный",
+                    "description": "Предназначен для размещения одного человека и комплектуется одной кроватью.",
+                    "price": 6000,
+                    "quantity": 300,
+                },
+            ),
+            "2": Example(
+                summary="DBL",
+                value={
+                    "title": "Двухместный с одной кроватью",
+                    "description": " Предусматривает установку одной двуспальной кровати и проживание "
+                    "двух постояльцев.",
+                    "price": 12000,
+                    "quantity": 150,
+                },
+            ),
+        }
+    ),
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     new_room = room_data.model_dump()
     new_room["hotel_id"] = hotel_id
-    room =  await db.rooms.create(RoomAddEx.model_validate(new_room))
-    if len( room_data.facilities_ids):
-        await db.rooms_facilities.bulk_create([
-            RoomFacilityAdd(room_id=room.id, facility_id=facility_id) for facility_id in room_data.facilities_ids
-        ])
+    room = await db.rooms.create(RoomAddEx.model_validate(new_room))
+    if len(room_data.facilities_ids):
+        await db.rooms_facilities.bulk_create(
+            [
+                RoomFacilityAdd(room_id=room.id, facility_id=facility_id)
+                for facility_id in room_data.facilities_ids
+            ]
+        )
     await db.commit()
 
     return {"ok": True, "data": room}
@@ -79,33 +86,30 @@ async def create_room(
 
 @router.put("/{hotel_id}/rooms/{room_id}", summary="Обновление данных")
 async def update_room(
-        hotel_id: int,
-        room_id: int,
-        room_data: RoomAddEx,
-        db: DbDep,
+    hotel_id: int,
+    room_id: int,
+    room_data: RoomAddEx,
+    db: DbDep,
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     await raise_if_hotel_not_found(room_data.hotel_id, db.hotels)
-    room =  await db.rooms.update(room_data, id=room_id, hotel_id=hotel_id)
+    room = await db.rooms.update(room_data, id=room_id, hotel_id=hotel_id)
     await db.rooms_facilities.sync_room_facilities(
-        room_id= room.id,
+        room_id=room.id,
         facility_ids=room_data.facilities_ids,
     )
     await db.commit()
     if room:
-        return {"ok": True , "room": room}
+        return {"ok": True, "room": room}
     raise HTTPException(status_code=404, detail="Номер не найден")
 
 
-@router.patch(
-    "/{hotel_id}/rooms/{room_id}",
-    summary="Частичное обновление данных"
-)
+@router.patch("/{hotel_id}/rooms/{room_id}", summary="Частичное обновление данных")
 async def patch_room(
-        hotel_id: int,
-        room_id: int,
-        room_data: RoomPatchRequest,
-        db: DbDep,
+    hotel_id: int,
+    room_id: int,
+    room_data: RoomPatchRequest,
+    db: DbDep,
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     if room_data.hotel_id:
@@ -113,9 +117,12 @@ async def patch_room(
     else:
         room_data.hotel_id = hotel_id
     room = await db.rooms.update(
-        RoomPatch.model_validate(room_data.model_dump(exclude=set("facilities_ids"), exclude_unset=True)),
-        id=room_id, hotel_id=hotel_id,
-        exclude_unset=True
+        RoomPatch.model_validate(
+            room_data.model_dump(exclude=set("facilities_ids"), exclude_unset=True)
+        ),
+        id=room_id,
+        hotel_id=hotel_id,
+        exclude_unset=True,
     )
     if room_data.facilities_ids is not None:
         await db.rooms_facilities.sync_room_facilities(
@@ -130,10 +137,9 @@ async def patch_room(
 
 @router.get("/{hotel_id}/rooms/{room_id}", summary="Получение данных")
 async def get_room(
-        hotel_id: int,
-        room_id: int,
-
-        db: DbDep,
+    hotel_id: int,
+    room_id: int,
+    db: DbDep,
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     hotel = await db.rooms.get_one_or_none_with_rels(id=room_id, hotel_id=hotel_id)

@@ -5,6 +5,7 @@ from typing import TypeVar, Generic
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 DBModelType = TypeVar("DBModelType", bound=Base)
 
+
 class DataMapper(Generic[SchemaType, DBModelType]):
     db_model: type[DBModelType] | None = None
     schema: type[SchemaType] | None = None
@@ -16,5 +17,10 @@ class DataMapper(Generic[SchemaType, DBModelType]):
         return schema.model_validate(data, from_attributes=True)
 
     @classmethod
-    def from_domain_entity(cls, data: BaseModel, exclude_unset: bool = False, exclude: set[str] | None = None):
+    def from_domain_entity(
+        cls,
+        data: BaseModel,
+        exclude_unset: bool = False,
+        exclude: set[str] | None = None,
+    ):
         return cls.db_model(**data.model_dump(exclude_unset=exclude_unset, exclude=exclude))
