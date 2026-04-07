@@ -16,7 +16,7 @@ def test_task():
 
 @celery_app.task
 def resize_image(
-    image_path: Path | str, output_dir: Path | str, widths: tuple[int] = (300, 500, 700)
+    image_path: Path | str, output_dir: Path | str, widths: tuple[int, int, int] = (300, 500, 700)
 ):
     """
     Сжимает изображение до заданных ширин, сохраняя пропорции.

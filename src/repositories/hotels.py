@@ -21,6 +21,8 @@ class HotelRepository(BaseRepository):
         location: str | None = None,
         title: str | None = None,
     ):
+        assert self._mapper.db_model is not None
+
         query = select(self._mapper.db_model)
 
         available_rooms_cte = (

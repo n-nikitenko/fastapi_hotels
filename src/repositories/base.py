@@ -6,7 +6,7 @@ from repositories.mappers import DataMapper
 
 
 class BaseRepository:
-    _mapper: DataMapper
+    _mapper: type[DataMapper]
 
     def __init__(self, session: AsyncSession):
         self._session = session

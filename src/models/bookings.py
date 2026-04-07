@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import BigInteger, ForeignKey, Date, func
+from sqlalchemy import BigInteger, ForeignKey, Date, func, ColumnElement
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -21,6 +21,6 @@ class BookingOrm(Base):
     def total_cost(self) -> int:
         return self.price * (self.to_date - self.from_date).days
 
-    @total_cost.expression
-    def total_cost(cls) -> int:
-        return cls.price * func.date_part("day", cls.to_date - cls.from_date)
+    @total_cost.inplace.expression
+    def _total_cost_expression(self) -> ColumnElement[int]:
+        return self.price * func.date_part("day", self.to_date - self.from_date)

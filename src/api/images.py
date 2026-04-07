@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, HTTPException
 
 from config import settings
 
@@ -12,10 +12,13 @@ router = APIRouter(prefix="/images", tags=["Изображения отелей"
 def upload_image(image: UploadFile):
     from tasks import resize_image
 
+    if not image.filename:
+        raise HTTPException(status_code=400, detail="Имя файла не указано")
+
     image_path = os.path.join(settings.UPLOAD_DIR, image.filename)
     with open(image_path, "wb+") as f:
         shutil.copyfileobj(image.file, f)
-    resize_image.delay(
+    resize_image.delay(  # type: ignore
         image_path=image_path,
         output_dir=settings.UPLOAD_DIR,
     )

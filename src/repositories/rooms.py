@@ -40,6 +40,8 @@ class RoomRepository(BaseRepository):
         return items
 
     async def get_one_or_none_with_rels(self, **filter_by):
+        assert self._mapper.db_model is not None
+
         query = (
             select(self._mapper.db_model)
             .filter_by(**filter_by)

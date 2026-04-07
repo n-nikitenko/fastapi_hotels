@@ -51,6 +51,7 @@ class DBManager:
             # Если исключения нет, коммит должен быть вызван явно в коде
         finally:
             # Закрываем сессию
+            assert self.session is not None
             await self.session.close()
             logger.debug("Выход из контекста транзакции")
 

@@ -17,6 +17,8 @@ class RoomsFacilitiesRepository(BaseRepository):
             await self.delete(room_id=room_id)
             return
 
+        assert self._mapper.db_model is not None
+
         stmt_select = select(self._mapper.db_model.id)
         result = await self._session.execute(stmt_select)
         current_facilities_ids = set(result.scalars().all())

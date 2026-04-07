@@ -29,7 +29,7 @@ async def create_facility(
 
     facility = await db.facilities.create(facility_data)
     await db.commit()
-    tasks.test_task.delay()
+    tasks.test_task.delay()  # type: ignore
 
     return {"ok": True, "data": facility}
 

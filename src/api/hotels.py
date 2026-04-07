@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Annotated
 
 from fastapi import APIRouter, Body
 from fastapi import HTTPException
@@ -15,10 +16,10 @@ router = APIRouter(prefix="/hotels", tags=["Отели"])
 async def get_hotels(
     paginator: PaginationDep,
     db: DbDep,
-    title: str | None = Query(default=None, description="Название отеля"),
-    location: str | None = Query(default=None, description="Адрес отеля"),
-    from_date: date = Query(examples=["2026-04-10"]),
-    to_date: date = Query(examples=["2026-04-14"]),
+    from_date: Annotated[date, Query(examples=["2026-04-10"])],
+    to_date: Annotated[date, Query(examples=["2026-04-14"])],
+    title: Annotated[str | None, Query(description="Название отеля")] = None,
+    location: Annotated[str | None, Query(description="Адрес отеля")] = None,
 ):
     limit = paginator.limit or 5
     return await db.hotels.get_all(

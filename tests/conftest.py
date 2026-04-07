@@ -1,3 +1,4 @@
+# ruff: noqa: F405
 import json
 import logging
 from typing import AsyncGenerator, Any, Tuple, Optional
@@ -14,7 +15,7 @@ from database import session_maker_null_pool, engine_null_pool
 from src.api.dependencies import get_db_manager, get_db
 from src.config import settings
 from src.main import app
-from src.models import *  # noqa: F403
+from src.models import *  # noqa
 from src.schemas import HotelAdd, RoomAddEx
 from src.utils import DBManager
 
@@ -49,8 +50,8 @@ class NoOpBackend(Backend):
     async def set(self, key, value, expire=None):
         pass
 
-    async def clear(self, namespace=None, key=None):
-        pass
+    async def clear(self, namespace: Optional[str] = None, key: Optional[str] = None) -> int:
+        return 0
 
 
 @pytest.fixture(scope="session", autouse=True)

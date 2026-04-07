@@ -88,7 +88,7 @@ class RedisManager:
             )
 
             try:
-                await self._client.ping()
+                await self._client.ping()  # type: ignore[misc]
             except Exception:
                 logger.exception("Failed to connect to Redis on initial ping")
                 await self.close()
@@ -106,9 +106,7 @@ class RedisManager:
             if self._client is not None:
                 logger.info("Closing Redis connection")
                 try:
-                    await self._client.close()
-                    if hasattr(self._client, "connection_pool"):
-                        await self._client.connection_pool.disconnect()  # type: ignore[attr-defined]
+                    await self._client.aclose()
                 except Exception:
                     logger.exception("Error while closing Redis connection")
                 finally:
@@ -130,8 +128,8 @@ class RedisManager:
         *,
         ex: int | None = None,
         px: int | None = None,
-        nx: bool | None = None,
-        xx: bool | None = None,
+        nx: bool = False,
+        xx: bool = False,
     ) -> bool:
         try:
             res = await self.client.set(key, value, ex=ex, px=px, nx=nx, xx=xx)
@@ -213,7 +211,7 @@ class RedisManager:
         """
         try:
             # numkeys=1, потом KEYS[1], потом ARGV[1]
-            await self.client.eval(lua, 1, key, value)
+            await self.client.eval(lua, 1, key, value)  # type: ignore[misc]
         except (ConnectionError, TimeoutError):
             logger.exception("Redis release_lock failed: key=%s", key)
             raise

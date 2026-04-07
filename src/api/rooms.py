@@ -72,7 +72,7 @@ async def create_room(
     new_room = room_data.model_dump()
     new_room["hotel_id"] = hotel_id
     room = await db.rooms.create(RoomAddEx.model_validate(new_room))
-    if len(room_data.facilities_ids):
+    if room_data.facilities_ids:
         await db.rooms_facilities.bulk_create(
             [
                 RoomFacilityAdd(room_id=room.id, facility_id=facility_id)
@@ -88,12 +88,15 @@ async def create_room(
 async def update_room(
     hotel_id: int,
     room_id: int,
-    room_data: RoomAddEx,
+    room_data: RoomAdd,
     db: DbDep,
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
-    await raise_if_hotel_not_found(room_data.hotel_id, db.hotels)
-    room = await db.rooms.update(room_data, id=room_id, hotel_id=hotel_id)
+    room = await db.rooms.update(
+        RoomAddEx.model_validate(room_data.model_dump(exclude=set("facilities_ids"))),
+        id=room_id,
+        hotel_id=hotel_id,
+    )
     await db.rooms_facilities.sync_room_facilities(
         room_id=room.id,
         facility_ids=room_data.facilities_ids,
