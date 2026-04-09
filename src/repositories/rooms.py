@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
+from exceptions import ObjectNotFoundException
 from .base import BaseRepository
 from .mappers import RoomDataMapper
 from .utils import get_available_rooms_by_date_stmt
@@ -51,3 +52,9 @@ class RoomRepository(BaseRepository):
         result = await self._session.execute(query)
         obj = result.scalars().unique().one_or_none()
         return self._mapper.to_domain_entity(obj, schema=RoomWithRels) if obj else None
+
+    async def get_one_with_rels(self, **filter_by):
+        obj = await self.get_one_or_none_with_rels(**filter_by)
+        if obj is None:
+            raise ObjectNotFoundException()
+        return obj

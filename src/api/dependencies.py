@@ -4,6 +4,7 @@ from fastapi import Depends, Request, HTTPException
 from fastapi.params import Query
 from jwt import DecodeError, ExpiredSignatureError
 from pydantic import BaseModel, Field
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from services import AuthService
 from utils import DBManager
@@ -29,7 +30,7 @@ def get_access_token(request: Request) -> str:
     access_token = request.cookies.get("access_token")
     if access_token:
         return access_token
-    raise HTTPException(status_code=401, detail="Необходима авторизация")
+    raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Необходима авторизация")
 
 
 def get_user_id(access_token: Annotated[str, Depends(get_access_token)]) -> int:
@@ -37,7 +38,7 @@ def get_user_id(access_token: Annotated[str, Depends(get_access_token)]) -> int:
         data = AuthService.decode_token(access_token)
         return data["user_id"]
     except (DecodeError, ExpiredSignatureError):
-        raise HTTPException(status_code=401, detail="Неверный токен доступа")
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Неверный токен доступа")
 
 
 UserIdDep = Annotated[int, Depends(get_user_id)]

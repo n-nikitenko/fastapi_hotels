@@ -1,7 +1,10 @@
+import asyncpg
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete
 
+from exceptions import ObjectNotFoundException, ObjectAlreadyExist
 from repositories.mappers import DataMapper
 
 
@@ -27,13 +30,26 @@ class BaseRepository:
         obj = result.scalars().one_or_none()
         return self._mapper.to_domain_entity(obj) if obj else None
 
+    async def get_one(self, **filter_by):
+        obj = await self.get_one_or_none(**filter_by)
+        if obj is None:
+            raise ObjectNotFoundException
+        return obj
+
     async def create(self, data: BaseModel):
         stmt = (
             insert(self._mapper.db_model)
             .values(**data.model_dump())
             .returning(self._mapper.db_model)
         )
-        result = await self._session.execute(stmt)
+        try:
+            result = await self._session.execute(stmt)
+        except IntegrityError as exc:
+            orig_cause = getattr(exc.orig, "__cause__", None)
+            if isinstance(orig_cause, asyncpg.exceptions.UniqueViolationError):
+                raise ObjectAlreadyExist() from exc
+            raise
+
         return self._mapper.to_domain_entity(result.scalars().first())
 
     async def bulk_create(self, items: list[BaseModel]):
@@ -48,7 +64,10 @@ class BaseRepository:
             .returning(self._mapper.db_model)
         )
         result = await self._session.execute(stmt)
-        return self._mapper.to_domain_entity(result.scalars().first())
+        obj = result.scalars().first()
+        if obj is None:
+            raise ObjectNotFoundException()
+        return self._mapper.to_domain_entity(obj)
 
     async def delete(self, **filter_by) -> None:
         stmt = delete(self._mapper.db_model).filter_by(**filter_by)

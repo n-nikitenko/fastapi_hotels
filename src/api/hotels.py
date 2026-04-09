@@ -5,8 +5,11 @@ from fastapi import APIRouter, Body
 from fastapi import HTTPException
 from fastapi.openapi.models import Example
 from fastapi.params import Query
+from starlette.status import HTTP_404_NOT_FOUND
 
 from api.dependencies import PaginationDep, DbDep
+from api.utils import raise_if_dates_inconsistency
+from exceptions import ObjectNotFoundException
 from schemas import HotelAdd, HotelPatch
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
@@ -21,6 +24,7 @@ async def get_hotels(
     title: Annotated[str | None, Query(description="Название отеля")] = None,
     location: Annotated[str | None, Query(description="Адрес отеля")] = None,
 ):
+    raise_if_dates_inconsistency(from_date, to_date)
     limit = paginator.limit or 5
     return await db.hotels.get_all(
         limit=limit,
@@ -103,7 +107,8 @@ async def get_hotel(
     hotel_id: int,
     db: DbDep,
 ):
-    hotel = await db.hotels.get_one_or_none(id=hotel_id)
-    if not hotel:
-        raise HTTPException(status_code=404, detail="Отель не найден")
+    try:
+        hotel = await db.hotels.get_one(id=hotel_id)
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
     return hotel
