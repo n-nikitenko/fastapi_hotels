@@ -42,6 +42,7 @@ async def remove_room(
     room_id: int,
     db: DbDep,
 ):
+    await raise_if_hotel_not_found(hotel_id, db.hotels)
     try:
         await db.rooms.delete(id=room_id, hotel_id=hotel_id)
     except ObjectNotFoundException:
