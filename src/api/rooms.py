@@ -42,9 +42,13 @@ async def remove_room(
     room_id: int,
     db: DbDep,
 ):
-    await db.rooms.delete(id=room_id, hotel_id=hotel_id)
-    await db.commit()
-    return {"ok": True}
+    try:
+        await db.rooms.delete(id=room_id, hotel_id=hotel_id)
+    except ObjectNotFoundException:
+       _raise_404()
+    else:
+        await db.commit()
+        return {"ok": True}
 
 
 @router.post("/{hotel_id}/rooms/", summary="Создание")

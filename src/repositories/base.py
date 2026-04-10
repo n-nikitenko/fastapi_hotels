@@ -1,8 +1,10 @@
+from typing import cast
+
 import asyncpg
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import select, insert, update, delete, CursorResult
 
 from exceptions import ObjectNotFoundException, ObjectAlreadyExist
 from repositories.mappers import DataMapper
@@ -71,4 +73,6 @@ class BaseRepository:
 
     async def delete(self, **filter_by) -> None:
         stmt = delete(self._mapper.db_model).filter_by(**filter_by)
-        await self._session.execute(stmt)
+        result: CursorResult = cast(CursorResult, await self._session.execute(stmt))
+        if result.rowcount==0:
+            raise ObjectNotFoundException()
