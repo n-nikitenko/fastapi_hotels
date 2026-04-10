@@ -9,6 +9,7 @@ from services import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Аутентификация и авторизация"])
 
+
 def _raise_401():
     raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Неверные email или пароль")
 
@@ -25,7 +26,10 @@ async def register_user(
     try:
         await db.users.create(processed_data)
     except ObjectAlreadyExist:
-        raise HTTPException(status_code=HTTP_409_CONFLICT, detail="Пользователь с указанным email уже зарегистрирован")
+        raise HTTPException(
+            status_code=HTTP_409_CONFLICT,
+            detail="Пользователь с указанным email уже зарегистрирован",
+        )
 
     await db.commit()
 

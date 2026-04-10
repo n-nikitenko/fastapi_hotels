@@ -1,17 +1,13 @@
 from fastapi import APIRouter, Body
 from fastapi import HTTPException
 from fastapi.openapi.models import Example
-from starlette.status import HTTP_409_CONFLICT, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_409_CONFLICT
 
 from api.dependencies import DbDep, UserIdDep
+from exceptions import RoomNotFoundHttpException
 from schemas import BookingAdd, BookingAddEx
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
-
-
-async def raise_if_room_not_found(room_id: int, repo):
-    if not await repo.get_one_or_none(id=room_id):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=f"Номер c {room_id=} не найден")
 
 
 @router.post("/", summary="Создание брони")
@@ -41,9 +37,7 @@ async def create_booking(
 ):
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     if not room:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail=f"Номер c room_id={booking_data.room_id} не найден"
-        )
+        raise RoomNotFoundHttpException(detail=f"Номер c room_id={booking_data.room_id} не найден")
     if await db.bookings.room_is_busy(
         booking_data.room_id,
         booking_data.from_date,

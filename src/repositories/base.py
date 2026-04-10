@@ -74,5 +74,5 @@ class BaseRepository:
     async def delete(self, **filter_by) -> None:
         stmt = delete(self._mapper.db_model).filter_by(**filter_by)
         result: CursorResult = cast(CursorResult, await self._session.execute(stmt))
-        if result.rowcount==0:
+        if result.rowcount == 0:
             raise ObjectNotFoundException()

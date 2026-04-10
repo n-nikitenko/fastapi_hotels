@@ -1,25 +1,15 @@
 from datetime import date
 
 from fastapi import APIRouter, Body
-from fastapi import HTTPException, Query
+from fastapi import Query
 from fastapi.openapi.models import Example
-from starlette.status import HTTP_404_NOT_FOUND
 
 from api.dependencies import DbDep
-from api.utils import raise_if_dates_inconsistency
-from exceptions import ObjectNotFoundException
+from api.utils import raise_if_dates_inconsistency, raise_if_hotel_not_found
+from exceptions import ObjectNotFoundException, RoomNotFoundHttpException
 from schemas import RoomAdd, RoomPatch, RoomAddEx, RoomFacilityAdd, RoomPatchRequest
-from services import hotel_exists
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
-
-
-async def raise_if_hotel_not_found(hotel_id: int, repo):
-    if not await hotel_exists(hotel_id, repo):
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=f"Отель c {hotel_id=} не найден")
-
-def _raise_404() -> None:
-    raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Номер не найден")
 
 
 @router.get("/{hotel_id}/rooms/", summary="Список номеров")
@@ -46,7 +36,7 @@ async def remove_room(
     try:
         await db.rooms.delete(id=room_id, hotel_id=hotel_id)
     except ObjectNotFoundException:
-       _raise_404()
+        raise RoomNotFoundHttpException()
     else:
         await db.commit()
         return {"ok": True}
@@ -106,12 +96,14 @@ async def update_room(
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     try:
         room = await db.rooms.update(
-            RoomAddEx.model_validate(room_data.model_dump(exclude={"facilities_ids"}) | {"hotel_id": hotel_id}),
+            RoomAddEx.model_validate(
+                room_data.model_dump(exclude={"facilities_ids"}) | {"hotel_id": hotel_id}
+            ),
             id=room_id,
             hotel_id=hotel_id,
         )
     except ObjectNotFoundException:
-        _raise_404()
+        raise RoomNotFoundHttpException()
     else:
         await db.rooms_facilities.sync_room_facilities(
             room_id=room.id,
@@ -143,7 +135,7 @@ async def patch_room(
             exclude_unset=True,
         )
     except ObjectNotFoundException:
-        _raise_404()
+        raise RoomNotFoundHttpException()
     else:
         if room_data.facilities_ids is not None:
             await db.rooms_facilities.sync_room_facilities(
@@ -152,7 +144,6 @@ async def patch_room(
             )
         await db.commit()
         return {"ok": True, "room": room}
-
 
 
 @router.get("/{hotel_id}/rooms/{room_id}", summary="Получение данных")
@@ -165,6 +156,6 @@ async def get_room(
     try:
         room = await db.rooms.get_one_with_rels(id=room_id, hotel_id=hotel_id)
     except ObjectNotFoundException:
-        _raise_404()
+        raise RoomNotFoundHttpException()
     else:
         return room
