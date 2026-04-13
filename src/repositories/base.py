@@ -1,3 +1,4 @@
+import logging
 from typing import cast
 
 import asyncpg
@@ -9,6 +10,7 @@ from sqlalchemy import select, insert, update, delete, CursorResult
 from exceptions import ObjectNotFoundException, ObjectAlreadyExist
 from repositories.mappers import DataMapper
 
+logger = logging.getLogger(__name__)
 
 class BaseRepository:
     _mapper: type[DataMapper]
@@ -48,6 +50,7 @@ class BaseRepository:
             result = await self._session.execute(stmt)
         except IntegrityError as exc:
             orig_cause = getattr(exc.orig, "__cause__", None)
+            logger.error("Не удалось добавить данные в БД: data=", data)
             if isinstance(orig_cause, asyncpg.exceptions.UniqueViolationError):
                 raise ObjectAlreadyExist() from exc
             raise

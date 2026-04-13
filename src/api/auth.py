@@ -46,12 +46,13 @@ async def login_user(
         user = await db.users.get_user_with_password(email=data.email)
     except ObjectNotFoundException:
         _raise_401()
-    if not AuthService().verify_password(data.password, user.hashed_password):
-        _raise_401()
-    access_token = AuthService.create_access_token({"user_id": user.id})
-    response.set_cookie("access_token", access_token)
+    else:
+        if not AuthService().verify_password(data.password, user.hashed_password):
+            _raise_401()
+        access_token = AuthService.create_access_token({"user_id": user.id})
+        response.set_cookie("access_token", access_token)
 
-    return {"access_token": access_token}
+        return {"access_token": access_token}
 
 
 @router.post("/logout", summary="Выход")
