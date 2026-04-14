@@ -1,5 +1,5 @@
 import pytest
-from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 
 @pytest.mark.parametrize(
@@ -10,7 +10,7 @@ from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND
         ("2026-03-01", "2026-03-04", HTTP_200_OK),
         ("2026-03-01", "2026-03-04", HTTP_200_OK),
         ("2026-03-01", "2026-03-04", HTTP_200_OK),
-        ("2026-03-01", "2026-03-04", HTTP_404_NOT_FOUND),
+        ("2026-03-01", "2026-03-04", HTTP_409_CONFLICT),
         ("2026-03-05", "2026-03-07", HTTP_200_OK),
     ],
 )

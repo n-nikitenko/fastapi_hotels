@@ -50,7 +50,7 @@ class BaseRepository:
             result = await self._session.execute(stmt)
         except IntegrityError as exc:
             orig_cause = getattr(exc.orig, "__cause__", None)
-            logger.error("Не удалось добавить данные в БД: data=", data)
+            logger.error("Не удалось добавить данные в БД: data=%s", data, exc_info=True)
             if isinstance(orig_cause, asyncpg.exceptions.UniqueViolationError):
                 raise ObjectAlreadyExist() from exc
             raise
