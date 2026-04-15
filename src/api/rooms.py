@@ -8,6 +8,7 @@ from api.dependencies import DbDep
 from api.utils import raise_if_dates_inconsistency, raise_if_hotel_not_found
 from exceptions import ObjectNotFoundException, RoomNotFoundHttpException
 from schemas import RoomAdd, RoomPatch, RoomAddEx, RoomFacilityAdd, RoomPatchRequest
+from services import RoomsService
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
@@ -21,7 +22,7 @@ async def get_rooms(
 ):
     raise_if_dates_inconsistency(from_date, to_date)
     await raise_if_hotel_not_found(hotel_id, db.hotels)
-    return await db.rooms.get_filtered_by_date(
+    return await RoomsService(db).get_filtered_by_date(
         hotel_id=hotel_id, from_date=from_date, to_date=to_date
     )
 
@@ -34,11 +35,10 @@ async def remove_room(
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     try:
-        await db.rooms.delete(id=room_id, hotel_id=hotel_id)
+        await RoomsService(db).remove(room_id=room_id, hotel_id=hotel_id)
     except ObjectNotFoundException:
         raise RoomNotFoundHttpException()
     else:
-        await db.commit()
         return {"ok": True}
 
 
@@ -71,17 +71,7 @@ async def create_room(
     ),
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
-    new_room = room_data.model_dump()
-    new_room["hotel_id"] = hotel_id
-    room = await db.rooms.create(RoomAddEx.model_validate(new_room))
-    if room_data.facilities_ids:
-        await db.rooms_facilities.bulk_create(
-            [
-                RoomFacilityAdd(room_id=room.id, facility_id=facility_id)
-                for facility_id in room_data.facilities_ids
-            ]
-        )
-    await db.commit()
+    room = await RoomsService(db).create(hotel_id=hotel_id, room_data=room_data)
 
     return {"ok": True, "data": room}
 
@@ -95,21 +85,14 @@ async def update_room(
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     try:
-        room = await db.rooms.update(
-            RoomAddEx.model_validate(
-                room_data.model_dump(exclude={"facilities_ids"}) | {"hotel_id": hotel_id}
-            ),
-            id=room_id,
+        room = await RoomsService(db).update(
+            room_data=room_data,
+            room_id=room_id,
             hotel_id=hotel_id,
         )
     except ObjectNotFoundException:
         raise RoomNotFoundHttpException()
     else:
-        await db.rooms_facilities.sync_room_facilities(
-            room_id=room.id,
-            facility_ids=room_data.facilities_ids,
-        )
-        await db.commit()
         return {"ok": True, "room": room}
 
 
@@ -126,23 +109,15 @@ async def patch_room(
     else:
         room_data.hotel_id = hotel_id
     try:
-        room = await db.rooms.update(
-            RoomPatch.model_validate(
-                room_data.model_dump(exclude={"facilities_ids"}, exclude_unset=True)
-            ),
-            id=room_id,
+        room = await RoomsService(db).update(
+            room_data=room_data,
+            room_id=room_id,
             hotel_id=hotel_id,
             exclude_unset=True,
         )
     except ObjectNotFoundException:
         raise RoomNotFoundHttpException()
     else:
-        if room_data.facilities_ids is not None:
-            await db.rooms_facilities.sync_room_facilities(
-                room_id=room.id,
-                facility_ids=room_data.facilities_ids,
-            )
-        await db.commit()
         return {"ok": True, "room": room}
 
 
@@ -154,7 +129,7 @@ async def get_room(
 ):
     await raise_if_hotel_not_found(hotel_id, db.hotels)
     try:
-        room = await db.rooms.get_one_with_rels(id=room_id, hotel_id=hotel_id)
+        room = await RoomsService(db).get(room_id=room_id, hotel_id=hotel_id)
     except ObjectNotFoundException:
         raise RoomNotFoundHttpException()
     else:
