@@ -5,9 +5,12 @@ import jwt
 from config import settings
 from pwdlib import PasswordHash
 
+from .base import BaseService
 
-class AuthService:
+
+class AuthService(BaseService):
     def __init__(self):
+        super().__init__()
         self.password_hash = PasswordHash.recommended()
 
     def get_password_hash(self, password):

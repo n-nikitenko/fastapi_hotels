@@ -11,6 +11,7 @@ from api.dependencies import PaginationDep, DbDep
 from api.utils import raise_if_dates_inconsistency
 from exceptions import ObjectNotFoundException
 from schemas import HotelAdd, HotelPatch
+from services import HotelsService
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -25,10 +26,9 @@ async def get_hotels(
     location: Annotated[str | None, Query(description="Адрес отеля")] = None,
 ):
     raise_if_dates_inconsistency(from_date, to_date)
-    limit = paginator.limit or 5
-    return await db.hotels.get_all(
-        limit=limit,
-        offset=(paginator.page - 1) * limit,
+    return await HotelsService(db).get_filtered_by_dates(
+        limit=paginator.limit,
+        page=paginator.page,
         location=location,
         title=title,
         from_date=from_date,
@@ -70,8 +70,7 @@ async def create_hotel(
         }
     ),
 ):
-    hotel = await db.hotels.create(hotel_data)
-    await db.commit()
+    hotel = await HotelsService(db).create(hotel_data)
 
     return {"ok": True, "data": hotel}
 
@@ -82,11 +81,12 @@ async def update_hotel(
     hotel_data: HotelAdd,
     db: DbDep,
 ):
-    hotel = await db.hotels.update(hotel_data, id=hotel_id)
-    await db.commit()
-    if hotel:
+    try:
+        hotel = await HotelsService(db).update(hotel_data=hotel_data, hotel_id=hotel_id)
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
+    else:
         return {"ok": True, "hotel": hotel}
-    raise HTTPException(status_code=404, detail="Отель не найден")
 
 
 @router.patch("/{hotel_id}", summary="Частичное обновление данных об отеле")
@@ -95,11 +95,12 @@ async def patch_hotel(
     hotel_data: HotelPatch,
     db: DbDep,
 ):
-    hotel = await db.hotels.update(hotel_data, id=hotel_id, exclude_unset=True)
-    await db.commit()
-    if hotel:
+    try:
+        hotel = await HotelsService(db).update(hotel_data=hotel_data, hotel_id=hotel_id, exclude_unset=True)
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
+    else:
         return {"ok": True, "hotel": hotel}
-    raise HTTPException(status_code=404, detail="Отель не найден")
 
 
 @router.get("/{hotel_id}", summary="Получение данных отеля")
@@ -108,7 +109,7 @@ async def get_hotel(
     db: DbDep,
 ):
     try:
-        hotel = await db.hotels.get_one(id=hotel_id)
+        hotel = await HotelsService(db).get_one(hotel_id=hotel_id)
     except ObjectNotFoundException:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
     return hotel
