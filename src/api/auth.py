@@ -5,7 +5,7 @@ from api.dependencies import UserIdDep, DbDep
 from exceptions import ObjectNotFoundException, ObjectAlreadyExist
 from schemas import UserRequestAdd, UserAdd, User
 
-from services import AuthService
+from services import AuthService, UsersService
 
 router = APIRouter(prefix="/auth", tags=["Аутентификация и авторизация"])
 
@@ -43,7 +43,7 @@ async def login_user(
     db: DbDep,
 ):
     try:
-        user = await db.users.get_user_with_password(email=data.email)
+        user = await  UsersService(db).get_by_email(email=data.email)
     except ObjectNotFoundException:
         _raise_401()
     else:
@@ -61,7 +61,7 @@ async def logout_user(
     response: Response,
     db: DbDep,
 ):
-    await db.users.get_one_or_none(id=user_id)
+    await UsersService(db).get_by_id(user_id=user_id)
     response.delete_cookie("access_token")
     return {"ok": True}
 
@@ -71,5 +71,4 @@ async def get_me(
     user_id: UserIdDep,
     db: DbDep,
 ) -> User:
-    user = await db.users.get_one(id=user_id)
-    return user
+    return await UsersService(db).get_by_id(user_id=user_id)
