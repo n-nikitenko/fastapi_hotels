@@ -4,8 +4,9 @@ from fastapi.openapi.models import Example
 from starlette.status import HTTP_409_CONFLICT
 
 from api.dependencies import DbDep, UserIdDep
-from exceptions import RoomNotFoundHttpException
-from schemas import BookingAdd, BookingAddEx
+from exceptions import RoomNotFoundHttpException, ObjectNotFoundException, NoFreeRoomsException
+from schemas import BookingAdd
+from services import BookingsService
 
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
 
@@ -35,33 +36,24 @@ async def create_booking(
         }
     ),
 ):
-    room = await db.rooms.get_one_or_none(id=booking_data.room_id)
-    if not room:
+    try:
+        booking = await BookingsService(db).create(user_id=user_id, booking_data=booking_data)
+    except ObjectNotFoundException:
         raise RoomNotFoundHttpException(detail=f"Номер c room_id={booking_data.room_id} не найден")
-    if await db.bookings.room_is_busy(
-        booking_data.room_id,
-        booking_data.from_date,
-        booking_data.to_date,
-        hotel_id=room.hotel_id,
-    ):
+    except NoFreeRoomsException:
         raise HTTPException(
             status_code=HTTP_409_CONFLICT,
             detail=f"Номер c room_id={booking_data.room_id} уже забронирован",
         )
-    new_booking = booking_data.model_dump()
-    new_booking["user_id"] = user_id
-    new_booking["price"] = room.price
-    booking = await db.bookings.create(BookingAddEx.model_validate(new_booking))
-    await db.commit()
-
-    return {"ok": True, "data": booking}
+    else:
+        return {"ok": True, "data": booking}
 
 
 @router.get("/", summary="Список всех бронирований")
 async def get_bookings(
     db: DbDep,
 ):
-    return await db.bookings.get_all()
+    return await BookingsService(db).get_all()
 
 
 @router.get("/me", summary="Список бронирований пользователя")
@@ -69,4 +61,4 @@ async def get_user_bookings(
     user_id: UserIdDep,
     db: DbDep,
 ):
-    return await db.bookings.get_all_filtered(user_id=user_id)
+    return await BookingsService(db).get_all_for_user(user_id=user_id)
