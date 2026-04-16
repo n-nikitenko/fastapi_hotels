@@ -5,30 +5,32 @@ from .base import BaseService
 
 
 class RoomsService(BaseService):
-    async  def get_filtered_by_date(
-            self,
-            hotel_id: int,
-            from_date: date,
-            to_date: date,
+    async def get_filtered_by_date(
+        self,
+        hotel_id: int,
+        from_date: date,
+        to_date: date,
     ):
         assert self.db is not None
         return await self.db.rooms.get_filtered_by_date(
-            hotel_id=hotel_id, from_date=from_date, to_date=to_date,
+            hotel_id=hotel_id,
+            from_date=from_date,
+            to_date=to_date,
         )
 
-    async  def remove(
-            self,
-            hotel_id: int,
-            room_id: int,
+    async def remove(
+        self,
+        hotel_id: int,
+        room_id: int,
     ):
         assert self.db is not None
         await self.db.rooms.delete(id=room_id, hotel_id=hotel_id)
         await self.db.commit()
 
     async def create(
-            self,
-            hotel_id: int,
-            room_data: RoomAdd,
+        self,
+        hotel_id: int,
+        room_data: RoomAdd,
     ) -> Room:
         assert self.db is not None
         new_room = room_data.model_dump()
@@ -45,16 +47,20 @@ class RoomsService(BaseService):
         return room
 
     async def update(
-            self,
-            hotel_id: int,
-            room_id: int,
-            room_data: RoomAdd | RoomPatchRequest,
-            exclude_unset: bool = True,
+        self,
+        hotel_id: int,
+        room_id: int,
+        room_data: RoomAdd | RoomPatchRequest,
+        exclude_unset: bool = True,
     ) -> Room:
         assert self.db is not None
         room = await self.db.rooms.update(
             RoomAddEx.model_validate(
-                room_data.model_dump(exclude={"facilities_ids"}, exclude_unset=exclude_unset,) | {"hotel_id": hotel_id},
+                room_data.model_dump(
+                    exclude={"facilities_ids"},
+                    exclude_unset=exclude_unset,
+                )
+                | {"hotel_id": hotel_id},
             ),
             id=room_id,
             hotel_id=hotel_id,
@@ -67,11 +73,10 @@ class RoomsService(BaseService):
         await self.db.commit()
         return room
 
-
     async def get(
-            self,
-            hotel_id: int,
-            room_id: int,
+        self,
+        hotel_id: int,
+        room_id: int,
     ) -> RoomWithRels:
         assert self.db is not None
         return await self.db.rooms.get_one_with_rels(id=room_id, hotel_id=hotel_id)

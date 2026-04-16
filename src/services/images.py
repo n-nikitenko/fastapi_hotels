@@ -8,13 +8,14 @@ from exceptions import ObjectNotFoundException
 from .base import BaseService
 from tasks import resize_image
 
+
 class ImagesService(BaseService):
     def __init__(self):
         super().__init__()
 
     @staticmethod
     def upload_image(
-            image: UploadFile,
+        image: UploadFile,
     ):
 
         if not image.filename:

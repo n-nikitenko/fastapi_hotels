@@ -96,7 +96,9 @@ async def patch_hotel(
     db: DbDep,
 ):
     try:
-        hotel = await HotelsService(db).update(hotel_data=hotel_data, hotel_id=hotel_id, exclude_unset=True)
+        hotel = await HotelsService(db).update(
+            hotel_data=hotel_data, hotel_id=hotel_id, exclude_unset=True
+        )
     except ObjectNotFoundException:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
     else:

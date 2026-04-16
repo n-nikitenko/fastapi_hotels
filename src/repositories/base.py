@@ -12,6 +12,7 @@ from repositories.mappers import DataMapper
 
 logger = logging.getLogger(__name__)
 
+
 class BaseRepository:
     _mapper: type[DataMapper]
 

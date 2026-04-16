@@ -12,6 +12,8 @@ def upload_image(image: UploadFile):
     try:
         ImagesService.upload_image(image)
     except ObjectNotFoundException:
-        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail="Имя файла не указано")
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail="Имя файла не указано"
+        )
     else:
         return {"ok": True}

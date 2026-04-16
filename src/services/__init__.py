@@ -7,5 +7,13 @@ from .images import ImagesService
 from .rooms import RoomsService
 from .users import UsersService
 
-__all__ = ["AuthService", "hotel_exists", "HotelsService", "RoomsService", "FacilitiesService", "BookingsService",
-           "ImagesService", "UsersService"]
+__all__ = [
+    "AuthService",
+    "hotel_exists",
+    "HotelsService",
+    "RoomsService",
+    "FacilitiesService",
+    "BookingsService",
+    "ImagesService",
+    "UsersService",
+]

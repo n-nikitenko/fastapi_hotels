@@ -43,7 +43,7 @@ async def login_user(
     db: DbDep,
 ):
     try:
-        user = await  UsersService(db).get_by_email(email=data.email)
+        user = await UsersService(db).get_by_email(email=data.email)
     except ObjectNotFoundException:
         _raise_401()
     else:
