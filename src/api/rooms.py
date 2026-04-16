@@ -7,7 +7,7 @@ from fastapi.openapi.models import Example
 from api.dependencies import DbDep
 from api.utils import raise_if_dates_inconsistency, raise_if_hotel_not_found
 from exceptions import ObjectNotFoundException, RoomNotFoundHttpException
-from schemas import RoomAdd, RoomPatch, RoomAddEx, RoomFacilityAdd, RoomPatchRequest
+from schemas import RoomAdd, RoomPatchRequest
 from services import RoomsService
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])

@@ -34,9 +34,11 @@ class HotelsService(BaseService):
         )
 
     async def get_one(self, hotel_id: int):
+        assert self.db is not None
         return await self.db.hotels.get_one(id=hotel_id)
 
     async def create(self, hotel_data: HotelAdd):
+        assert self.db is not None
         hotel = await self.db.hotels.create(hotel_data)
         await self.db.commit()
         return hotel
@@ -48,6 +50,7 @@ class HotelsService(BaseService):
             hotel_data: HotelAdd | HotelPatch,
             exclude_unset: bool = False,
     ):
+        assert self.db is not None
         hotel = await self.db.hotels.update(hotel_data, id=hotel_id, exclude_unset=exclude_unset)
         await self.db.commit()
         if not hotel:

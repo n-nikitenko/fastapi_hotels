@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Body
 from fastapi.openapi.models import Example
 from fastapi_cache.decorator import cache
-import tasks
 
 from api.dependencies import DbDep, UserIdDep
 from schemas import FacilityAdd
+from services import FacilitiesService
 
 router = APIRouter(prefix="/facilities", tags=["Удобства"])
 
@@ -27,9 +27,7 @@ async def create_facility(
     ),
 ):
 
-    facility = await db.facilities.create(facility_data)
-    await db.commit()
-    tasks.test_task.delay()  # type: ignore
+    facility = await FacilitiesService(db).create(facility_data=facility_data)
 
     return {"ok": True, "data": facility}
 
@@ -39,4 +37,4 @@ async def create_facility(
 async def get_facilities(
     db: DbDep,
 ):
-    return await db.facilities.get_all()
+    return await FacilitiesService(db).get_all()

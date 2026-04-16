@@ -2,6 +2,7 @@ import os
 import shutil
 
 from fastapi import APIRouter, UploadFile, HTTPException
+from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
 
 from config import settings
 
@@ -13,7 +14,7 @@ def upload_image(image: UploadFile):
     from tasks import resize_image
 
     if not image.filename:
-        raise HTTPException(status_code=400, detail="Имя файла не указано")
+        raise HTTPException(status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail="Имя файла не указано")
 
     image_path = os.path.join(settings.UPLOAD_DIR, image.filename)
     with open(image_path, "wb+") as f:

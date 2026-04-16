@@ -11,6 +11,7 @@ class RoomsService(BaseService):
             from_date: date,
             to_date: date,
     ):
+        assert self.db is not None
         return await self.db.rooms.get_filtered_by_date(
             hotel_id=hotel_id, from_date=from_date, to_date=to_date,
         )
@@ -20,6 +21,7 @@ class RoomsService(BaseService):
             hotel_id: int,
             room_id: int,
     ):
+        assert self.db is not None
         await self.db.rooms.delete(id=room_id, hotel_id=hotel_id)
         await self.db.commit()
 
@@ -28,6 +30,7 @@ class RoomsService(BaseService):
             hotel_id: int,
             room_data: RoomAdd,
     ) -> Room:
+        assert self.db is not None
         new_room = room_data.model_dump()
         new_room["hotel_id"] = hotel_id
         room = await self.db.rooms.create(RoomAddEx.model_validate(new_room))
@@ -48,6 +51,7 @@ class RoomsService(BaseService):
             room_data: RoomAdd | RoomPatchRequest,
             exclude_unset: bool = True,
     ) -> Room:
+        assert self.db is not None
         room = await self.db.rooms.update(
             RoomAddEx.model_validate(
                 room_data.model_dump(exclude={"facilities_ids"}, exclude_unset=exclude_unset,) | {"hotel_id": hotel_id},
@@ -69,4 +73,5 @@ class RoomsService(BaseService):
             hotel_id: int,
             room_id: int,
     ) -> RoomWithRels:
+        assert self.db is not None
         return await self.db.rooms.get_one_with_rels(id=room_id, hotel_id=hotel_id)
