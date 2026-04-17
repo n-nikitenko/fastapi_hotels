@@ -1,7 +1,6 @@
-from fastapi import APIRouter, UploadFile, HTTPException
-from starlette.status import HTTP_422_UNPROCESSABLE_CONTENT
+from fastapi import APIRouter, UploadFile
 
-from exceptions import ObjectNotFoundException
+from exceptions import ObjectNotFoundException, NoImageFileHttpException
 from services import ImagesService
 
 router = APIRouter(prefix="/images", tags=["Изображения отелей"])
@@ -12,8 +11,6 @@ def upload_image(image: UploadFile):
     try:
         ImagesService.upload_image(image)
     except ObjectNotFoundException:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_CONTENT, detail="Имя файла не указано"
-        )
+        raise NoImageFileHttpException()
     else:
         return {"ok": True}

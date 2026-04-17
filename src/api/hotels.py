@@ -2,14 +2,12 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Body
-from fastapi import HTTPException
 from fastapi.openapi.models import Example
 from fastapi.params import Query
-from starlette.status import HTTP_404_NOT_FOUND
 
 from api.dependencies import PaginationDep, DbDep
 from api.utils import raise_if_dates_inconsistency
-from exceptions import ObjectNotFoundException
+from exceptions import ObjectNotFoundException, HotelNotFoundHttpException
 from schemas import HotelAdd, HotelPatch
 from services import HotelsService
 
@@ -84,7 +82,7 @@ async def update_hotel(
     try:
         hotel = await HotelsService(db).update(hotel_data=hotel_data, hotel_id=hotel_id)
     except ObjectNotFoundException:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
+        raise HotelNotFoundHttpException()
     else:
         return {"ok": True, "hotel": hotel}
 
@@ -100,7 +98,7 @@ async def patch_hotel(
             hotel_data=hotel_data, hotel_id=hotel_id, exclude_unset=True
         )
     except ObjectNotFoundException:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
+        raise HotelNotFoundHttpException()
     else:
         return {"ok": True, "hotel": hotel}
 
@@ -113,5 +111,5 @@ async def get_hotel(
     try:
         hotel = await HotelsService(db).get_one(hotel_id=hotel_id)
     except ObjectNotFoundException:
-        raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="Отель не найден")
+        raise HotelNotFoundHttpException()
     return hotel

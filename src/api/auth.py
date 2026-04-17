@@ -1,8 +1,12 @@
-from fastapi import APIRouter, HTTPException, Response
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_409_CONFLICT
+from fastapi import APIRouter, Response
 
 from api.dependencies import UserIdDep, DbDep
-from exceptions import ObjectNotFoundException, ObjectAlreadyExist
+from exceptions import (
+    ObjectNotFoundException,
+    ObjectAlreadyExist,
+    IncorrectEmailOrPasswordHttpException,
+    UserAlreadyExistHttpException,
+)
 from schemas import UserRequestAdd, UserAdd, User
 
 from services import AuthService, UsersService
@@ -11,7 +15,7 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация и авт
 
 
 def _raise_401():
-    raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Неверные email или пароль")
+    raise IncorrectEmailOrPasswordHttpException()
 
 
 @router.post("/register", summary="Регистрация")
@@ -26,10 +30,7 @@ async def register_user(
     try:
         await db.users.create(processed_data)
     except ObjectAlreadyExist:
-        raise HTTPException(
-            status_code=HTTP_409_CONFLICT,
-            detail="Пользователь с указанным email уже зарегистрирован",
-        )
+        raise UserAlreadyExistHttpException()
 
     await db.commit()
 

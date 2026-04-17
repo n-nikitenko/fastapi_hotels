@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Body
-from fastapi import HTTPException
 from fastapi.openapi.models import Example
-from starlette.status import HTTP_409_CONFLICT
 
 from api.dependencies import DbDep, UserIdDep
-from exceptions import RoomNotFoundHttpException, ObjectNotFoundException, NoFreeRoomsException
+from exceptions import (
+    RoomNotFoundHttpException,
+    ObjectNotFoundException,
+    NoFreeRoomsException,
+    RoomIsBusyHttpException,
+)
 from schemas import BookingAdd
 from services import BookingsService
 
@@ -41,8 +44,7 @@ async def create_booking(
     except ObjectNotFoundException:
         raise RoomNotFoundHttpException(detail=f"Номер c room_id={booking_data.room_id} не найден")
     except NoFreeRoomsException:
-        raise HTTPException(
-            status_code=HTTP_409_CONFLICT,
+        raise RoomIsBusyHttpException(
             detail=f"Номер c room_id={booking_data.room_id} уже забронирован",
         )
     else:
