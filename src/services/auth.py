@@ -5,8 +5,10 @@ import jwt
 from config import settings
 from pwdlib import PasswordHash
 
+from exceptions import InvalidTokenException
 from .base import BaseService
 
+from jwt import DecodeError, ExpiredSignatureError
 
 class AuthService(BaseService):
     def __init__(self):
@@ -33,10 +35,13 @@ class AuthService(BaseService):
 
     @staticmethod
     def decode_token(token: str) -> dict:
-        return jwt.decode(
-            token,
-            settings.JWT_SECRET_KEY,
-            algorithms=[
-                settings.JWT_ALGORITHM,
-            ],
-        )
+        try:
+            return jwt.decode(
+                token,
+                settings.JWT_SECRET_KEY,
+                algorithms=[
+                    settings.JWT_ALGORITHM,
+                ],
+            )
+        except (DecodeError, ExpiredSignatureError):
+            raise InvalidTokenException()

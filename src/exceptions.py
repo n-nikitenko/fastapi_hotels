@@ -26,6 +26,9 @@ class NoFreeRoomsException(BaseHotelsException):
     detail = "Нет свободных номеров"
 
 
+class InvalidTokenException(BaseHotelsException):
+    detail = "Неверный токен доступа"
+
 class HotelsBaseHTTPException(HTTPException):
     status_code = HTTP_404_NOT_FOUND
     detail = "Неожиданная ошибка"

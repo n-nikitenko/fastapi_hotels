@@ -2,10 +2,9 @@ from typing import Annotated, AsyncGenerator, Any
 
 from fastapi import Depends, Request
 from fastapi.params import Query
-from jwt import DecodeError, ExpiredSignatureError
 from pydantic import BaseModel, Field
 
-from exceptions import UnauthorizedHttpException, InvalidTokenHttpException
+from exceptions import UnauthorizedHttpException, InvalidTokenHttpException, InvalidTokenException
 from services import AuthService
 from utils import DBManager
 from repositories import (
@@ -36,9 +35,10 @@ def get_access_token(request: Request) -> str:
 def get_user_id(access_token: Annotated[str, Depends(get_access_token)]) -> int:
     try:
         data = AuthService.decode_token(access_token)
-        return data["user_id"]
-    except (DecodeError, ExpiredSignatureError):
+    except InvalidTokenException:
         raise InvalidTokenHttpException()
+    else:
+        return data["user_id"]
 
 
 UserIdDep = Annotated[int, Depends(get_user_id)]
