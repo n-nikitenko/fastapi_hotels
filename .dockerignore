@@ -1,0 +1,8 @@
+.venv
+.env
+.env.test
+.gitignore
+Dockerfile
+docker-compose.test.yaml
+docker-compose.yaml
+.idea

@@ -15,3 +15,10 @@ export PYTHONPATH=/src
 ```shell
      docker compose  -f docker-compose.test.yaml --env-file .env.test up -d
 ```
+
+
+## nginx 
+Если занят 80 порт
+```commandline
+sudo service apache2 stop
+```
