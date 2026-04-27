@@ -9,6 +9,13 @@ export PYTHONPATH=/src
      alembic upgrade head # Применить миграции
 ```
 
+### Миграции на хостинге (Docker)
+```shell
+docker compose up -d postgres redis
+docker compose run --rm backend poetry run alembic upgrade head
+docker compose up -d backend celery celery_beat nginx_service
+```
+
 
 ## Тестовое окружение
 

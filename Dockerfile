@@ -19,6 +19,7 @@ RUN pip install poetry==1.8.3
 
 # Копируем файлы зависимостей
 COPY pyproject.toml poetry.lock ./
+COPY alembic.ini ./
 
 # Устанавливаем зависимости через Poetry в системный Python
 RUN poetry config virtualenvs.create false && \
