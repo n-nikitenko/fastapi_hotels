@@ -88,8 +88,9 @@ services:
     volumes:
       # Слева путь на ПК, справа — путь внутри контейнера
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
     ports:
-      - "80:80"
       - "443:443"
     networks:
       - hotels_network
