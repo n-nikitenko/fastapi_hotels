@@ -45,7 +45,7 @@ UserIdDep = Annotated[int, Depends(get_user_id)]
 
 
 def get_db_manager(session_factory=None) -> DBManager:
-    from src.database import session_maker
+    from database import session_maker
 
     if session_factory is None:
         session_factory = session_maker
