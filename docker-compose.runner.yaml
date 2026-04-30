@@ -1,0 +1,8 @@
+services:
+  gitlab_runner:
+    image: gitlab/gitlab-runner:alpine
+    container_name: hotels_gitlab_runner
+    restart: unless-stopped
+    volumes:
+      - /srv/gitlab-runner/config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
