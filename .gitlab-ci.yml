@@ -23,6 +23,6 @@ deploy-job:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - docker compose -f docker-compose.ci.yaml up -d --no-build postgres redis backend
-    - docker exec nginx_service nginx -s reload
+    - docker exec hotels_nginx nginx -s reload
     - docker compose -f docker-compose.ci.yaml ps
     
