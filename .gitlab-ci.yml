@@ -9,7 +9,7 @@ stages:
 
 build-job:
   stage: build
-  before-script:
+  before_script:
     - cp ${ENV} .env
     - cp ${ENV_TEST} .env.test
   script:
