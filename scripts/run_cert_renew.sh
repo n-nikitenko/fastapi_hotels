@@ -1,5 +1,8 @@
-docker compose down nginx_service
-systemctl start nginx
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker compose stop nginx_service
+sudo systemctl start nginx
 sudo certbot renew --force_renewal
-systemctl stop nginx
-docker compose up -d nginx_service
+sudo systemctl stop nginx
+docker compose up -d --no-deps nginx_service

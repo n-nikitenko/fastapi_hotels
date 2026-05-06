@@ -88,3 +88,8 @@ docker compose -f docker-compose.runner.yaml restart gitlab_runner
 ```commandline
 sudo service apache2 stop
 ```
+
+Запуск только `nginx_service` без перезапуска зависимостей:
+```shell
+docker compose up -d --no-deps nginx_service
+```
