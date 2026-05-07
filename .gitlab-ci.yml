@@ -18,5 +18,5 @@ deploy-job:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - docker compose -f docker-compose.ci.yaml up -d
-    - docker exec hotels_nginx nginx -s reload
+#    - docker exec hotels_nginx nginx -s reload
     
