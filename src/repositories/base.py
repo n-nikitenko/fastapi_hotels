@@ -63,10 +63,18 @@ class BaseRepository:
         await self._session.execute(stmt)
 
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by):
+        values = data.model_dump(exclude_unset=exclude_unset)
+        # Empty data should not produce invalid SQL like "UPDATE ... SET  WHERE ...".
+        if not values:
+            obj = await self.get_one_or_none(**filter_by)
+            if obj is None:
+                raise ObjectNotFoundException()
+            return obj
+
         stmt = (
             update(self._mapper.db_model)
             .filter_by(**filter_by)
-            .values(**data.model_dump(exclude_unset=exclude_unset))
+            .values(**values)
             .returning(self._mapper.db_model)
         )
         result = await self._session.execute(stmt)
