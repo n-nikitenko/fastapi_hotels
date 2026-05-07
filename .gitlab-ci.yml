@@ -23,10 +23,7 @@ deploy-job:
     - |
       if [ "$(docker inspect -f '{{.State.Running}}' hotels_nginx 2>/dev/null || echo false)" = "true" ]; then
         docker exec hotels_nginx nginx -s reload
-      elif docker inspect hotels_nginx >/dev/null 2>&1; then
-        echo "hotels_nginx exists but is stopped, starting container"
-        docker start hotels_nginx
       else
-        echo "hotels_nginx is absent in current Docker context, skip nginx step"
+        echo "hotels_nginx is not running in current Docker context, skip nginx step"
       fi
     
