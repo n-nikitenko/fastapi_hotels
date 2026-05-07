@@ -4,9 +4,6 @@ services:
     container_name: hotels_celery
     restart: unless-stopped
     command:  ["poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "worker", "-l", "info"]
-    depends_on:
-      - redis
-      - postgres
     networks:
       - hotels_network
     volumes:
@@ -18,9 +15,6 @@ services:
     container_name: hotels_celery_beat
     restart: unless-stopped
     command: [ "poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "beat", "-l", "info" ]
-    depends_on:
-      - redis
-      - postgres
     networks:
       - hotels_network
 
@@ -28,9 +22,6 @@ services:
     image: booking-api-image:latest
     container_name: hotels_backend
     restart: unless-stopped
-    depends_on:
-      - redis
-      - postgres
     networks:
       - hotels_network
     volumes:
