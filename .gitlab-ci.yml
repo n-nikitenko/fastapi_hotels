@@ -20,5 +20,11 @@ deploy-job:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - docker compose -f docker-compose.ci.yaml up -d
-    - docker exec hotels_nginx nginx -s reload
+    - |
+      if [ "$(docker inspect -f '{{.State.Running}}' hotels_nginx 2>/dev/null || echo false)" = "true" ]; then
+        docker exec hotels_nginx nginx -s reload
+      else
+        echo "hotels_nginx is not running, starting nginx_service"
+        docker compose -f docker-compose.yaml up -d --no-deps nginx_service
+      fi
     

@@ -23,6 +23,13 @@ docker compose up -d backend celery celery_beat nginx_service
      docker compose  -f docker-compose.test.yaml --env-file .env.test up -d
 ```
 
+## Деплой на хостинг
+
+- `docker-compose.yaml` используется для хостинга/production: `postgres`, `redis`, `nginx_service`.
+- `docker-compose.ci.yaml` используется в GitLab CI/CD для запуска/обновления `backend`, `celery`, `celery_beat`.
+- `nginx_service` не поднимается из CI compose-файла, чтобы не смешивать edge/proxy хоста с CI-контуром.
+- После deploy CI выполняется `nginx -s reload` только если контейнер `hotels_nginx` уже запущен на хосте.
+
 ## GitLab Runner (отдельный compose)
 
 Runner вынесен в отдельный файл `docker-compose.runner.yaml`, чтобы не смешивать CI/CD-инфраструктуру с приложением.
