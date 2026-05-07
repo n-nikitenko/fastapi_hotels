@@ -34,14 +34,18 @@ async def get_hotels(
     )
 
 
-@router.delete("/{id}", summary="Удаление отеля")
+@router.delete("/{hotel_id}", summary="Удаление отеля")
 async def remove_hotel(
     hotel_id: int,
     db: DbDep,
 ):
-    await db.hotels.delete(id=hotel_id)
-    await db.commit()
-    return {"ok": True}
+    try:
+        await db.hotels.delete(id=hotel_id)
+    except ObjectNotFoundException:
+        raise HotelNotFoundHttpException()
+    else:
+        await db.commit()
+        return {"ok": True}
 
 
 @router.post("", summary="Создание отеля")

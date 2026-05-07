@@ -85,3 +85,8 @@ class IncorrectEmailOrPasswordHttpException(HotelsBaseHTTPException):
 class UserAlreadyExistHttpException(HotelsBaseHTTPException):
     status_code = HTTP_409_CONFLICT
     detail = "Пользователь с указанным email уже зарегистрирован"
+
+
+class UserNotFoundHttpException(HotelsBaseHTTPException):
+    status_code = HTTP_404_NOT_FOUND
+    detail = "Пользователь не найден"

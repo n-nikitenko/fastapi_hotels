@@ -6,6 +6,7 @@ from exceptions import (
     ObjectAlreadyExist,
     IncorrectEmailOrPasswordHttpException,
     UserAlreadyExistHttpException,
+    UserNotFoundHttpException,
 )
 from schemas import UserRequestAdd, UserAdd, User
 
@@ -62,9 +63,13 @@ async def logout_user(
     response: Response,
     db: DbDep,
 ):
-    await UsersService(db).get_by_id(user_id=user_id)
-    response.delete_cookie("access_token")
-    return {"ok": True}
+    try:
+        await UsersService(db).get_by_id(user_id=user_id)
+    except ObjectNotFoundException:
+        raise UserNotFoundHttpException()
+    else:
+        response.delete_cookie("access_token")
+        return {"ok": True}
 
 
 @router.get("/me")
@@ -72,4 +77,7 @@ async def get_me(
     user_id: UserIdDep,
     db: DbDep,
 ) -> User:
-    return await UsersService(db).get_by_id(user_id=user_id)
+    try:
+        return await UsersService(db).get_by_id(user_id=user_id)
+    except ObjectNotFoundException:
+        raise UserNotFoundHttpException()

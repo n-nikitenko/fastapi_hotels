@@ -27,7 +27,7 @@ async def get_rooms(
     )
 
 
-@router.delete("/{hotel_id}/rooms/{id}", summary="Удаление")
+@router.delete("/{hotel_id}/rooms/{room_id}", summary="Удаление")
 async def remove_room(
     hotel_id: int,
     room_id: int,
