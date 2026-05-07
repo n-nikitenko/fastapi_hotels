@@ -6,7 +6,7 @@ from services import ImagesService
 router = APIRouter(prefix="/images", tags=["Изображения отелей"])
 
 
-@router.post("/", summary="Загрузка изображения")
+@router.post("", summary="Загрузка изображения")
 def upload_image(image: UploadFile):
     try:
         ImagesService.upload_image(image)

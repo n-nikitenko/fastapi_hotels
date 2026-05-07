@@ -9,7 +9,7 @@ from services import FacilitiesService
 router = APIRouter(prefix="/facilities", tags=["Удобства"])
 
 
-@router.post("/", summary="Создание")
+@router.post("", summary="Создание")
 async def create_facility(
     db: DbDep,
     user_id: UserIdDep,
@@ -32,7 +32,7 @@ async def create_facility(
     return {"ok": True, "data": facility}
 
 
-@router.get("/", summary="Список всех удобств")
+@router.get("", summary="Список всех удобств")
 @cache(expire=5)
 async def get_facilities(
     db: DbDep,

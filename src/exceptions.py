@@ -53,12 +53,12 @@ class RoomNotFoundHttpException(HotelsBaseHTTPException):
 
 
 class RoomIsBusyHttpException(HotelsBaseHTTPException):
-    status_code = (HTTP_409_CONFLICT,)
+    status_code = HTTP_409_CONFLICT
     detail = "Номер уже забронирован"
 
 
 class DatesInconsistencyHttpException(HotelsBaseHTTPException):
-    status_code = (HTTP_422_UNPROCESSABLE_CONTENT,)
+    status_code = HTTP_422_UNPROCESSABLE_CONTENT
     detail = "Дата выезда не может быть раньше даты заезда"
 
 

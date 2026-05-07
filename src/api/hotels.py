@@ -14,7 +14,7 @@ from services import HotelsService
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
-@router.get("/", summary="Список отелей")
+@router.get("", summary="Список отелей")
 async def get_hotels(
     paginator: PaginationDep,
     db: DbDep,
@@ -44,7 +44,7 @@ async def remove_hotel(
     return {"ok": True}
 
 
-@router.post("/", summary="Создание отеля")
+@router.post("", summary="Создание отеля")
 async def create_hotel(
     db: DbDep,
     hotel_data: HotelAdd = Body(

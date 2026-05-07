@@ -14,7 +14,7 @@ from services import BookingsService
 router = APIRouter(prefix="/bookings", tags=["Бронирования"])
 
 
-@router.post("/", summary="Создание брони")
+@router.post("", summary="Создание брони")
 async def create_booking(
     db: DbDep,
     user_id: UserIdDep,
@@ -51,7 +51,7 @@ async def create_booking(
         return {"ok": True, "data": booking}
 
 
-@router.get("/", summary="Список всех бронирований")
+@router.get("", summary="Список всех бронирований")
 async def get_bookings(
     db: DbDep,
 ):

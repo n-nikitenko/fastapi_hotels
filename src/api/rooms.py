@@ -13,7 +13,7 @@ from services import RoomsService
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
 
-@router.get("/{hotel_id}/rooms/", summary="Список номеров")
+@router.get("/{hotel_id}/rooms", summary="Список номеров")
 async def get_rooms(
     hotel_id: int,
     db: DbDep,
@@ -42,7 +42,7 @@ async def remove_room(
         return {"ok": True}
 
 
-@router.post("/{hotel_id}/rooms/", summary="Создание")
+@router.post("/{hotel_id}/rooms", summary="Создание")
 async def create_room(
     hotel_id: int,
     db: DbDep,
