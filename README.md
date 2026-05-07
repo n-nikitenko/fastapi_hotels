@@ -9,6 +9,16 @@ export PYTHONPATH=/src
      alembic upgrade head # Применить миграции
 ```
 
+Если генерируете миграцию через `docker compose run --rm backend`, файл миграции создаётся внутри временного контейнера и может не попасть в локальный проект.
+Чтобы миграция сохранялась локально, запускайте команду с volume-монтированием:
+```shell
+docker compose run --rm \
+  -v "$(pwd)/src:/app/src" \
+  -v "$(pwd)/alembic.ini:/app/alembic.ini" \
+  backend \
+  poetry run alembic -c /app/alembic.ini revision --autogenerate -m "your_migration_name"
+```
+
 ### Миграции на хостинге (Docker)
 ```shell
 docker compose up -d postgres redis

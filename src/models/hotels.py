@@ -10,4 +10,4 @@ class HotelOrm(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     title: Mapped[str] = mapped_column(String(100))
     location: Mapped[str]
-    stars: Mapped[int]
+    stars: Mapped[int | None]
