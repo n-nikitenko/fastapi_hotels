@@ -1,28 +1,22 @@
-variables:
-  APP_IMAGE: fastapi-hotels:${CI_COMMIT_SHORT_SHA}
-
 stages:
   - build
   - deploy
 
-default:
+build-job:
+  stage: build
   before_script:
     - test -f "$ENV" || (echo "ENV is not a file variable"; exit 1)
     - test -f "$ENV_TEST" || (echo "ENV_TEST is not a file variable"; exit 1)
     - cp "$ENV" .env
     - cp "$ENV_TEST" .env.test
-
-build-job:
-  stage: build
   script:
-    - docker build -t "$APP_IMAGE" .
+    - docker build -t booking-api-image .
 
 deploy-job:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - docker compose -f docker-compose.ci.yaml up -d --no-build postgres redis backend
+    - docker compose -f docker-compose.ci.yaml up -d
     - docker exec hotels_nginx nginx -s reload
-    - docker compose -f docker-compose.ci.yaml ps
     
