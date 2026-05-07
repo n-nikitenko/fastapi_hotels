@@ -2,13 +2,15 @@ stages:
   - build
   - deploy
 
-build-job:
-  stage: build
+default:
   before_script:
     - test -f "$ENV" || (echo "ENV is not a file variable"; exit 1)
     - test -f "$ENV_TEST" || (echo "ENV_TEST is not a file variable"; exit 1)
     - cp "$ENV" .env
     - cp "$ENV_TEST" .env.test
+
+build-job:
+  stage: build
   script:
     - docker build -t booking-api-image .
 

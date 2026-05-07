@@ -2,6 +2,8 @@ services:
   celery:
     image: booking-api-image:latest
     container_name: hotels_celery
+    env_file:
+      - .env
     command:  ["poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "worker", "-l", "info"]
     networks:
       - hotels_network
@@ -12,6 +14,8 @@ services:
   celery_beat:
     image: booking-api-image:latest
     container_name: hotels_celery_beat
+    env_file:
+      - .env
     command: [ "poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "beat", "-l", "info" ]
     networks:
       - hotels_network
@@ -19,6 +23,8 @@ services:
   backend:
     image: booking-api-image:latest
     container_name: hotels_backend
+    env_file:
+      - .env
     networks:
       - hotels_network
     volumes:
