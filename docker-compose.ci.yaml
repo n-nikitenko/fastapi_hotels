@@ -29,4 +29,4 @@ services:
       - ./src/static/images:/app/src/static/images
 networks:
   hotels_network:
-    driver: bridge
+    external: true
