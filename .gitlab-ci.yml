@@ -1,5 +1,6 @@
 stages:
   - build
+  - migrate
   - deploy
 
 default:
@@ -12,7 +13,15 @@ default:
 build-job:
   stage: build
   script:
-    - docker build -t booking-api-image .
+    - docker build -t booking-api-image:latest -t booking-api-image .
+
+migrate-job:
+  stage: migrate
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - docker compose -f docker-compose.yaml up -d postgres redis
+    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run alembic -c /app/alembic.ini upgrade head
 
 deploy-job:
   stage: deploy

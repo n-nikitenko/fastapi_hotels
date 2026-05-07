@@ -19,7 +19,7 @@ docker compose run --rm \
   poetry run alembic -c /app/alembic.ini revision --autogenerate -m "your_migration_name"
 ```
 
-### Миграции на хостинге (Docker)
+### Миграции локально (Docker)
 ```shell
 docker compose up -d postgres redis
 docker compose run --rm backend poetry run alembic upgrade head
@@ -39,6 +39,14 @@ docker compose up -d backend celery celery_beat nginx_service
 - `docker-compose.ci.yaml` используется в GitLab CI/CD для запуска/обновления `backend`, `celery`, `celery_beat`.
 - `nginx_service` не поднимается из CI compose-файла, чтобы не смешивать edge/proxy хоста с CI-контуром.
 - После deploy CI выполняется `nginx -s reload` только если контейнер `hotels_nginx` уже запущен на хосте.
+
+### Применение миграций на хостинге
+```shell
+docker compose -f docker-compose.yaml up -d postgres redis
+docker compose -f docker-compose.ci.yaml run --rm backend poetry run alembic -c /app/alembic.ini upgrade head
+docker compose -f docker-compose.ci.yaml up -d backend celery celery_beat
+docker exec hotels_nginx nginx -s reload
+```
 
 ## GitLab Runner (отдельный compose)
 
