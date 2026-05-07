@@ -97,4 +97,5 @@ volumes:
   postgres_data:
 networks:
   hotels_network:
+    name: hotels_network
     driver: bridge

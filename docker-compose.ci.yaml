@@ -2,7 +2,6 @@ services:
   celery:
     image: booking-api-image:latest
     container_name: hotels_celery
-    restart: unless-stopped
     command:  ["poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "worker", "-l", "info"]
     networks:
       - hotels_network
@@ -13,7 +12,6 @@ services:
   celery_beat:
     image: booking-api-image:latest
     container_name: hotels_celery_beat
-    restart: unless-stopped
     command: [ "poetry", "run", "celery", "-A", "tasks.celery_app:celery_app", "beat", "-l", "info" ]
     networks:
       - hotels_network
@@ -21,7 +19,6 @@ services:
   backend:
     image: booking-api-image:latest
     container_name: hotels_backend
-    restart: unless-stopped
     networks:
       - hotels_network
     volumes:
