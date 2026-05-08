@@ -42,12 +42,7 @@ tests-job:
       set -e
       : > pytest.log
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml config > compose.resolved.yaml
-      python - <<'PY'
-      from pathlib import Path
-      for line in Path("compose.resolved.yaml").read_text().splitlines():
-          if any(token in line for token in ("env_file", "MODE", "POSTGRES_DB", "DATABASE_DSN")):
-              print(line)
-      PY
+      grep -E "env_file|MODE|POSTGRES_DB|DATABASE_DSN" compose.resolved.yaml || true
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
       python -c "import os; [print(f'{k}={os.getenv(k)}') for k in ('MODE','POSTGRES_DB','DATABASE_DSN')]"
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
