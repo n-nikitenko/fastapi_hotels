@@ -38,7 +38,23 @@ migrate-job:
 tests-job:
   stage: tests
   script:
-    - APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -s -v
+    - |
+      set -e
+      run_pytest() {
+        APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -v "$@"
+      }
+      if ! run_pytest tests/api/auth tests/api/facilities tests/api/hotels; then
+        echo "Tests batch 1 failed. Collecting docker diagnostics..."
+        docker ps -a || true
+        docker stats --no-stream || true
+        exit 1
+      fi
+      if ! run_pytest tests/api/bookings tests/services tests/utils; then
+        echo "Tests batch 2 failed. Collecting docker diagnostics..."
+        docker ps -a || true
+        docker stats --no-stream || true
+        exit 1
+      fi
 
 deploy-job:
   stage: deploy
