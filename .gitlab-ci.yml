@@ -40,21 +40,30 @@ tests-job:
   script:
     - |
       set -e
+      : > pytest.log
       run_pytest() {
-        APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -v "$@"
+        echo "Running pytest for: $*" | tee -a pytest.log
+        APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -vv --tb=long --maxfail=1 "$@" >> pytest.log 2>&1
       }
       if ! run_pytest tests/api/auth tests/api/facilities tests/api/hotels; then
         echo "Tests batch 1 failed. Collecting docker diagnostics..."
+        cat pytest.log
         docker ps -a || true
         docker stats --no-stream || true
         exit 1
       fi
       if ! run_pytest tests/api/bookings tests/services tests/utils; then
         echo "Tests batch 2 failed. Collecting docker diagnostics..."
+        cat pytest.log
         docker ps -a || true
         docker stats --no-stream || true
         exit 1
       fi
+      cat pytest.log
+  artifacts:
+    when: always
+    paths:
+      - pytest.log
 
 deploy-job:
   stage: deploy
