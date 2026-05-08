@@ -40,22 +40,38 @@ tests-job:
   script:
     - |
       set -e
-      : > pytest.log
-      APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml config > compose.resolved.yaml
-      grep -E "env_file|MODE|POSTGRES_DB|DATABASE_DSN" compose.resolved.yaml || true
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
-      python -c "import os; [print(f'{k}={os.getenv(k)}') for k in ('MODE','POSTGRES_DB','DATABASE_DSN')]"
+      python - <<'PY'
+      import asyncio
+      import os
+
+      import asyncpg
+
+      async def ensure_test_db() -> None:
+          db_name = os.environ["POSTGRES_DB"]
+          conn = await asyncpg.connect(
+              user=os.environ["POSTGRES_USER"],
+              password=os.environ["POSTGRES_PASSWORD"],
+              host=os.environ["POSTGRES_HOST"],
+              port=int(os.environ.get("POSTGRES_PORT", 5432)),
+              database="postgres",
+          )
+          try:
+              exists = await conn.fetchval(
+                  "SELECT 1 FROM pg_database WHERE datname = $1",
+                  db_name,
+              )
+              print(f"test db exists: {bool(exists)} ({db_name})")
+              if not exists:
+                  await conn.execute(f'CREATE DATABASE "{db_name}"')
+                  print(f"created test db: {db_name}")
+          finally:
+              await conn.close()
+
+      asyncio.run(ensure_test_db())
+      PY
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
-      python -c "from src.config import settings; print(f'MODE={settings.MODE}'); print(f'DATABASE_DSN={settings.DATABASE_DSN}'); assert settings.MODE == 'TEST'; assert settings.DATABASE_DSN.endswith('/test'), 'DATABASE_DSN must point to /test db'"
-      APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
-      poetry run pytest -vv --tb=long --maxfail=1 tests/api/auth tests/api/facilities tests/api/hotels >> pytest.log 2>&1
-      APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
-      poetry run pytest -vv --tb=long --maxfail=1 tests/api/bookings tests/services tests/utils >> pytest.log 2>&1
-      cat pytest.log
-  artifacts:
-    when: always
-    paths:
-      - pytest.log
+      poetry run pytest -s -v
 
 deploy-job:
   stage: deploy
