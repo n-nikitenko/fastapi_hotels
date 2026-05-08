@@ -25,7 +25,7 @@ lint-job:
 format-job:
   stage: lint_format
   script:
-    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff format
+    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff format --check
 
 migrate-job:
   stage: migrate
