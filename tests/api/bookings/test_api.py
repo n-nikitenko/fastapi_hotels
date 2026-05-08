@@ -1,5 +1,5 @@
 import pytest
-from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
+from starlette.status import HTTP_200_OK, HTTP_409_CONFLICT
 
 
 @pytest.mark.parametrize(

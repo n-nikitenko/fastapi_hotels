@@ -10,6 +10,7 @@ from .base import BaseService
 
 from jwt import DecodeError, ExpiredSignatureError
 
+
 class AuthService(BaseService):
     def __init__(self):
         super().__init__()
