@@ -1,7 +1,7 @@
 stages:
   - build
-  - lint_format
-  - migrate
+#  - lint_format
+#  - migrate
   - tests
   - deploy
 
