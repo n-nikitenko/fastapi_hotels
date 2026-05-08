@@ -38,7 +38,7 @@ migrate-job:
 tests-job:
   stage: tests
   script:
-    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -s -v
+    - APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -s -v
 
 deploy-job:
   stage: deploy
