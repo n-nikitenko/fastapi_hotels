@@ -28,8 +28,8 @@ services:
     networks:
       - hotels_network
     volumes:
-      # Слева путь на ПК, справа — путь внутри контейнера
-      - ./src/static/images:/app/src/static/images
+      # Для CI-монопрогона тестов монтируем весь проект (включая tests и pyproject.toml)
+      - ./:/app
 networks:
   hotels_network:
     external: true
