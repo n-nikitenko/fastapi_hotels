@@ -107,6 +107,24 @@ docker compose -f docker-compose.runner.yaml restart gitlab_runner
 
 > Примечание: это даёт job'ам расширенный доступ к Docker хоста. Используйте только для доверенных проектов/раннеров.
 
+### 6) CI падает с `exit code 137` (OOMKilled)
+Если runner работает на хосте с 1 GB RAM, тесты могут падать с `exit code 137`.
+Минимальная рекомендация для self-hosted runner: добавить swap 2 GB.
+
+```shell
+sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+grep -q "^/swapfile " /etc/fstab || echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+```
+
+Проверка:
+```shell
+free -h
+swapon --show
+```
+
 
 ## nginx 
 Если занят 80 порт
