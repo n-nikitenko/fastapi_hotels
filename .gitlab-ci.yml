@@ -41,24 +41,32 @@ tests-job:
     - |
       set -e
       : > pytest.log
-      run_pytest() {
-        echo "Running pytest for: $*" | tee -a pytest.log
-        APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -vv --tb=long --maxfail=1 "$@" >> pytest.log 2>&1
+      run_batch() {
+        batch_name="$1"
+        shift
+        container_name="ci_${batch_name}_${CI_JOB_ID}"
+        echo "Running pytest for ${batch_name}: $*" | tee -a pytest.log
+        set +e
+        APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --name "$container_name" backend poetry run pytest -vv --tb=long --maxfail=1 "$@" >> pytest.log 2>&1
+        rc=$?
+        set -e
+        if [ $rc -ne 0 ]; then
+          echo "Pytest ${batch_name} failed with exit code ${rc}" | tee -a pytest.log
+          echo "===== docker logs: ${container_name} =====" | tee -a pytest.log
+          docker logs "$container_name" >> pytest.log 2>&1 || true
+          echo "===== docker inspect: ${container_name} =====" | tee -a pytest.log
+          docker inspect "$container_name" >> pytest.log 2>&1 || true
+          echo "===== docker diagnostics =====" | tee -a pytest.log
+          docker ps -a >> pytest.log 2>&1 || true
+          docker stats --no-stream >> pytest.log 2>&1 || true
+          cat pytest.log
+          docker rm -f "$container_name" >/dev/null 2>&1 || true
+          exit $rc
+        fi
+        docker rm -f "$container_name" >/dev/null 2>&1 || true
       }
-      if ! run_pytest tests/api/auth tests/api/facilities tests/api/hotels; then
-        echo "Tests batch 1 failed. Collecting docker diagnostics..."
-        cat pytest.log
-        docker ps -a || true
-        docker stats --no-stream || true
-        exit 1
-      fi
-      if ! run_pytest tests/api/bookings tests/services tests/utils; then
-        echo "Tests batch 2 failed. Collecting docker diagnostics..."
-        cat pytest.log
-        docker ps -a || true
-        docker stats --no-stream || true
-        exit 1
-      fi
+      run_batch batch1 tests/api/auth tests/api/facilities tests/api/hotels
+      run_batch batch2 tests/api/bookings tests/services tests/utils
       cat pytest.log
   artifacts:
     when: always
