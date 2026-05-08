@@ -16,7 +16,7 @@ from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 )
 async def test_create_booking(auth_async_client, from_date, to_date, status_code):
     response = await auth_async_client.post(
-        url="/bookings/",
+        url="/bookings",
         json={
             "room_id": 1,
             "from_date": from_date,
@@ -48,7 +48,7 @@ async def test_add_and_get_my_bookings(
     remove_all_bookings, auth_async_client, from_date, to_date, bookings_count
 ):
     await auth_async_client.post(
-        url="/bookings/",
+        url="/bookings",
         json={
             "room_id": 1,
             "from_date": from_date,

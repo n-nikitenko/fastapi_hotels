@@ -1,6 +1,8 @@
 stages:
   - build
+  - lint_format
   - migrate
+  - tests
   - deploy
 
 default:
@@ -15,6 +17,16 @@ build-job:
   script:
     - docker build -t booking-api-image:latest -t booking-api-image .
 
+lint-job:
+  stage: lint_format
+  script:
+    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff check
+
+format-job:
+  stage: lint_format
+  script:
+    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff format
+
 migrate-job:
   stage: migrate
   rules:
@@ -22,6 +34,11 @@ migrate-job:
   script:
     - docker compose -f docker-compose.yaml up -d postgres redis
     - docker compose -f docker-compose.ci.yaml run --rm backend poetry run alembic -c /app/alembic.ini upgrade head
+
+tests-job:
+  stage: tests
+  script:
+    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run pytest -s -v
 
 deploy-job:
   stage: deploy
