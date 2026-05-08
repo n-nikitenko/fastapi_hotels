@@ -41,6 +41,8 @@ tests-job:
     - |
       set -e
       : > pytest.log
+      APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml config | rg "env_file|MODE|POSTGRES_DB|DATABASE_DSN" || true
+      APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend env | rg "^(MODE|POSTGRES_DB|DATABASE_DSN)="
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
       python -c "from src.config import settings; print(f'MODE={settings.MODE}'); print(f'DATABASE_DSN={settings.DATABASE_DSN}'); assert settings.MODE == 'TEST'; assert settings.DATABASE_DSN.endswith('/test'), 'DATABASE_DSN must point to /test db'"
       APP_ENV_FILE=.env.test docker compose -f docker-compose.ci.yaml run --rm backend \
