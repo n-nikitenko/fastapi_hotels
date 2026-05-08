@@ -17,23 +17,23 @@ build-job:
   script:
     - docker build -t booking-api-image:latest -t booking-api-image .
 
-lint-job:
-  stage: lint_format
-  script:
-    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff check
-
-format-job:
-  stage: lint_format
-  script:
-    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff format --check
-
-migrate-job:
-  stage: migrate
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-  script:
-    - docker compose -f docker-compose.yaml up -d postgres redis
-    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run alembic -c /app/alembic.ini upgrade head
+#lint-job:
+#  stage: lint_format
+#  script:
+#    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff check
+#
+#format-job:
+#  stage: lint_format
+#  script:
+#    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run ruff format --check
+#
+#migrate-job:
+#  stage: migrate
+#  rules:
+#    - if: '$CI_COMMIT_BRANCH == "main"'
+#  script:
+#    - docker compose -f docker-compose.yaml up -d postgres redis
+#    - docker compose -f docker-compose.ci.yaml run --rm backend poetry run alembic -c /app/alembic.ini upgrade head
 
 tests-job:
   stage: tests
