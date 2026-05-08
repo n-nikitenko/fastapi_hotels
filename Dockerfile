@@ -27,6 +27,7 @@ RUN poetry config virtualenvs.create false && \
     poetry install --no-root
 
 COPY src/ ./src/
+COPY tests/ ./tests/
 
 # Открываем порт
 EXPOSE 8000
