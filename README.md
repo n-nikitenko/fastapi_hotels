@@ -136,3 +136,27 @@ sudo service apache2 stop
 ```shell
 docker compose up -d --no-deps nginx_service
 ```
+
+## Подключение к PostgreSQL из pgAdmin (локальный ПК)
+
+Рекомендуется подключаться через SSH-туннель, не открывая `5432` в интернет.
+
+Если Postgres запущен в Docker и не проброшен на хост:
+
+1) Узнайте IP контейнера Postgres на сервере:
+```shell
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' hotels_postgres
+```
+
+2) На локальном компьютере поднимите SSH-туннель:
+```shell
+ssh -N -L 55432:<POSTGRES_CONTAINER_IP>:5432 user@<SERVER_IP>
+```
+
+3) В pgAdmin используйте параметры:
+- Host: `127.0.0.1`
+- Port: `55432`
+- Username: ваш `POSTGRES_USER`
+- Password: ваш `POSTGRES_PASSWORD`
+- Maintenance database: `postgres`
+```
